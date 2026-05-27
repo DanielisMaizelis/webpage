@@ -1,0 +1,9 @@
+# transcription venv (recreate with: python3 -m venv .caption-venv && .caption-venv/bin/pip install faster-whisper)
+.caption-venv/
+
+# local backup copies of original/source videos
+*.orig.mp4
+
+# OS / editor cruft
+.DS_Store
+*.swp

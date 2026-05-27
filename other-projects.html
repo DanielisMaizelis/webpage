@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Other projects — smaller experiments and builds by Danielis Maizelis.">
+  <meta name="theme-color" content="#f3f0ea">
+  <title>Other Projects — Danielis Maizelis</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="page-overlay" id="page-overlay"></div>
+
+<header class="site-header">
+  <a class="brand" href="main.html">Danielis Maizelis</a>
+  <ul class="nav-links">
+    <li><a href="main.html">Index</a></li>
+    <li><a href="rl-forest.html">RL Forest</a></li>
+    <li><a href="danieltube.html">Daniel Tube</a></li>
+    <li><a href="other-projects.html" class="active">Other Projects</a></li>
+    <li><a href="media/cv.pdf" class="cv-btn" download>Download CV</a></li>
+  </ul>
+</header>
+
+<!-- HERO -->
+<section class="editorial" style="padding-top: 160px;">
+  <span class="eyebrow-mark">Everything else</span>
+  <h1 class="display-h">Other<br><em>projects.</em></h1>
+  <p class="lede" style="margin-top: 3rem;">
+    Projects either done earlier or done in companies and internships, they are not extensively covered mostly due to their secrecy. Here is their brief overview:
+  </p>
+</section>
+
+<!-- ROW 01 — image left -->
+<section class="editorial">
+  <div class="row-split">
+    <video class="figure-video wide" autoplay muted loop playsinline style="aspect-ratio: 3/4;">
+      <source src="media/quad-can-web.mp4" type="video/mp4">
+    </video>
+    <div class="col-text">
+      <span class="eyebrow-mark">01 — Quad CAN Project</span>
+      <h3>Five buses,<br>one tester.</h3>
+      <p>The project was about writing firmware for a device at the company Elinta Motors, the QUAD CAN. This is a module used in a car for connecting many electric componets of the car at once. 
+        The device contained four CAN connections at once for high speed communication, like the speedometer, and a seperate LIN connection for slower communications, like side mirrors, windows and others.
+        In the video shown the tester after switching on, the black device sends mock messages to the tester, if the CAN/LIN packets are correct, they are labelled as "OK" in the terminal.<p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ROW 04 — image right -->
+<section class="editorial">
+  <div class="row-split ">
+    <div class="col-text">
+      <span class="eyebrow-mark">03 Subaru Racing Dashboard</span>
+      <h3>Reactive<br>on the track.</h3>
+      <p>Software for a Subaru racing dashboard at the company Elinta Motors, programmed to react live to CAN connections — surfacing the car's telemetry as it drives. The video shows example RPM changes by sending mock packets to the Subaru dashboard.</p>
+    </div>
+    <video class="figure-video tall" autoplay muted loop playsinline>
+      <source src="media/subaru-rpm-web.mp4" type="video/mp4">
+    </video>
+  </div>
+</section>
+
+<!-- ROW 05 — image left -->
+<section class="editorial">
+  <div class="row-split">
+    <video class="figure-video wide" autoplay muted loop playsinline style="aspect-ratio: 1/2; max-width: 50%; margin: 0 auto;">
+      <source src="media/app.mp4" type="video/mp4">
+    </video>
+    <div class="col-text">
+      <span class="eyebrow-mark">04 — Axis Garage Parking Meter</span>
+      <h3>Parking Garage App</h3>
+      <p>A parking app for the Axis company. Connects the preexisting AI cameras used for detecting avilable car spots in the company garage, the available parking spots are sent using MQTT and showed in the app, this includes standard and electric car parks. The app intergrated google OAuth signup with administrator/regular user priviledges. The administrator has access to the seperate page,
+          giving a choice for whom the app is available to. The admin also can check the air quality in the garage. The app was made using Kotlin, with the desired design of Axis company colors in mind.
+          </p>
+    </div>
+  </div>
+</section>
+
+<section class="editorial">
+  <div class="row-split">
+    <video class="figure-video wide" autoplay muted loop playsinline style="aspect-ratio: 3/5;">
+      <source src="media/robocar-web.mp4" type="video/mp4">
+    </video>
+    <div class="col-text">
+      <span class="eyebrow-mark">05 — Robocar project</span>
+      <h3>Robocar Project</h3>
+      <p>The robocar was coded using PlatformIO using bare-metal C coding on atmega 328p. The code used IR sensor to navigate in the gradient racing track showed in the video.
+         The ultrasonic sensor is also used to stop when incoming objects appear in front of it. The bluetooth module is used in the robocar to control the robocar remotely. The aim is to make the robocar go in the track as quickly as possible without going out of the gradient race track.
+          </p>
+    </div>
+  </div>
+</section>
+<!-- FOOTER -->
+<p class="footer-mega">Let's <em>talk</em>.</p>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <h4>Email</h4>
+      <a href="mailto:maizeldaniel@proton.me">maizeldaniel@proton.me</a>
+    </div>
+    <div>
+      <h4>Pages</h4>
+      <a href="main.html">Index</a><br>
+      <a href="rl-forest.html">RL Forest</a><br>
+      <a href="danieltube.html">Daniel Tube</a><br>
+      <a href="other-projects.html">Other Projects</a>
+    </div>
+    <div>
+      <h4>LinkedIn</h4>
+      <a href="#" target="_blank" rel="noopener">Danielis Maizelis →</a>
+    </div>
+    <div>
+      <h4>GitHub</h4>
+      <a href="https://github.com/DanielisMaizelis" target="_blank" rel="noopener">@DanielisMaizelis →</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Danielis Maizelis (Daniel Maizel)</span>
+    <span>Built in Linux</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
+<script src="smooth-scroll.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Daniel Tube — a custom video platform, built from scratch.">
+  <meta name="theme-color" content="#f3f0ea">
+  <title>Daniel Tube — Danny Maizelis</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="page-overlay" id="page-overlay"></div>
+
+<header class="site-header">
+  <a class="brand" href="main.html">Danielis Maizelis</a>
+  <ul class="nav-links">
+    <li><a href="main.html">Index</a></li>
+    <li><a href="rl-forest.html">RL Forest</a></li>
+    <li><a href="danieltube.html" class="active">Daniel Tube</a></li>
+    <li><a href="other-projects.html">Other Projects</a></li>
+    <li><a href="media/cv.pdf" class="cv-btn" download>Download CV</a></li>
+  </ul>
+</header>
+
+<!-- HERO -->
+<section class="hero-full">
+  <video class="hero-video" autoplay muted loop playsinline poster="">
+    <source src="media/danieltube-web.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Project 02 · Web Platform</div>
+    <h1 class="hero-title">Fun language learning<br><em> without distractions</em></h1>
+    <div class="hero-meta">
+      <p>Daniel Tube is a terminal based app, used to download and translate any Youtube video, giving translated subtitles for excellent language learning.</p>
+      <a href="#story" class="link-arrow">Scroll — The story</a>
+    </div>
+  </div>
+</section>
+
+<!-- LEDE -->
+<section class="editorial" id="story">
+  <span class="eyebrow-mark">Why</span>
+  <p class="lede">
+    YouTube sometimes is too addicting. Making it in a terminal was not only fun, but made the platform seem like YOU are in control.
+    I combined this with AI based whisper api for language learning, making the translated video subtitles.
+
+  </p>
+</section>
+
+
+<!-- ROW: UPLOAD -->
+<section class="editorial">
+  <div class="row-split">
+    <video class="figure-video wide" autoplay muted loop playsinline>
+      <source src="media/danieltube-design-web.mp4" type="video/mp4">
+    </video>
+    <div class="col-text">
+      <span class="eyebrow-mark">01 — Ingest</span>
+      <h3>Terminal youtube<br>with language learning.</h3>
+      <p></p>YouTube is a magic trick that people stopped noticing, a platform that is too addicting. I was thinking of making a terminal based Youtube, that downloads the videos, giving time to respect the videos and the creators that you watch, while
+          removing uneccessary context switching which makes you tired from watching different types of videos so quickly.
+      I combined this philosophy with language learning. 
+      The Whisper api makes the translation subtitles of every video whichever language you want! The translated subtitles gives the on demand translation with constant exposure to new words</p>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section class="editorial">
+  <span class="eyebrow-mark">Stack</span>
+  <h2 class="display-h">Python. yt-dlp.<br><em>Whisper. FFmpeg.</em></h2>
+</section>
+
+<!-- PULL -->
+<section class="pull-section">
+  <blockquote>
+    The full code lives on GitHub —<br>
+    <a href="https://github.com/DanielisMaizelis/danieltube" target="_blank" rel="noopener">View the Daniel Tube code →</a>
+  </blockquote>
+</section>
+
+<!-- NEXT -->
+<a class="image-bleed ph-forest" href="rl-forest.html" style="text-decoration:none;">
+  <div class="bleed-text">
+    <div class="eyebrow-mark" style="color:#f3f0ea; opacity: 0.8;">Next project</div>
+    <h2>RL Forest Drone<br><em>→</em></h2>
+  </div>
+</a>
+
+<!-- FOOTER -->
+<p class="footer-mega">Let's <em>talk</em>.</p>
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <h4>Email</h4>
+      <a href="mailto:maizeldaniel@proton.me">maizeldaniel@proton.me</a>
+    </div>
+    <div>
+      <h4>Pages</h4>
+      <a href="main.html">Index</a><br>
+      <a href="rl-forest.html">RL Forest</a><br>
+      <a href="danieltube.html">Daniel Tube</a>
+    </div>
+    <div>
+      <h4>LinkedIn</h4>
+      <a href="#" target="_blank" rel="noopener">Danielis Maizelis →</a>
+    </div>
+    <div>
+      <h4>GitHub</h4>
+      <a href="https://github.com/DanielisMaizelis" target="_blank" rel="noopener">@DanielisMaizelis →</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Danielis Maizelis (Daniel Maizel)</span>
+    <span>Built in Linux</span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
+<script src="smooth-scroll.js"></script>
+</body>
+</html>

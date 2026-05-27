@@ -1,0 +1,151 @@
+1
+00:00:01,040 --> 00:00:10,040
+So my project is called the quad-CAN filter tester. Its job is to test this quad-CAN filter.
+
+2
+00:00:10,040 --> 00:00:17,040
+This quad-CAN filter incorporates five connections, CAN1, CAN2, LIN, CAN3 and CAN4.
+
+3
+00:00:17,040 --> 00:00:22,040
+All of these connections are being tested by this quad-CAN filter tester,
+
+4
+00:00:22,040 --> 00:00:29,040
+and the results are being showed onto this PC when it's plugged in into the USB.
+
+5
+00:00:29,040 --> 00:00:34,040
+Which means all the results can be shown on the terminal, which is very nice.
+
+6
+00:00:34,040 --> 00:00:46,060
+Once I will turn on the quad-CAN filter tester, the LEDs flash onto this quad-CAN filter,
+
+7
+00:00:46,060 --> 00:00:52,060
+meaning that the two LEDs flash here, meaning that all the CAN connections are good.
+
+8
+00:00:52,060 --> 00:01:01,060
+And if I go to the terminal here, the C connections, as you can see, which is CAN1, CAN2 and LIN,
+
+9
+00:01:01,060 --> 00:01:08,060
+all of them are okay, and the C1 connections, CAN3, CAN4, is also okay.
+
+10
+00:01:08,060 --> 00:01:13,060
+These are the C, and these are the C1 connections.
+
+11
+00:01:13,060 --> 00:01:19,060
+So C connections are here, C1 connections are here, and the same goes for this.
+
+12
+00:01:19,060 --> 00:01:27,060
+Now, in order to fully test all of the capabilities of this project,
+
+13
+00:01:27,060 --> 00:01:33,060
+I can firstly turn off the quad-CAN filter and let's just say something happens.
+
+14
+00:01:33,060 --> 00:01:40,060
+Actually, the tested component is not working, and let's just remove one of these parts here,
+
+15
+00:01:40,060 --> 00:01:42,060
+which is the C connections.
+
+16
+00:01:42,060 --> 00:01:49,060
+This C little filter is removed, which means what I'm going to see on the terminal here
+
+17
+00:01:49,060 --> 00:01:56,060
+is that all of the C connections, the thing that I've removed now, are going to be labeled as error.
+
+18
+00:01:56,060 --> 00:02:01,060
+So I turn on the quad-CAN filter tester.
+
+19
+00:02:01,060 --> 00:02:04,060
+The same thing happens.
+
+20
+00:02:05,060 --> 00:02:11,060
+The only thing here is that the C connections are labeled as error,
+
+21
+00:02:11,060 --> 00:02:15,060
+which is what I've anticipated, meaning everything is fine.
+
+22
+00:02:15,060 --> 00:02:18,060
+Same thing I can do with this.
+
+23
+00:02:18,060 --> 00:02:22,060
+I can remove the C1 connections here,
+
+24
+00:02:22,060 --> 00:02:27,060
+meaning that it's basically empty and nothing is going to really work here.
+
+25
+00:02:27,060 --> 00:02:35,060
+And as I'll turn off and I'll turn on the quad-CAN filter tester,
+
+26
+00:02:35,060 --> 00:02:41,060
+all of them are going to be shown as error, so C and C1 connections.
+
+27
+00:02:41,060 --> 00:02:48,060
+Now, what I can do now is I can just put all of these connections on.
+
+28
+00:02:48,060 --> 00:02:55,060
+So I put in the C connections here, and I will also put in the C1 connections.
+
+29
+00:02:55,060 --> 00:03:01,060
+It's very hard to do this with one hand, but here you go.
+
+30
+00:03:01,060 --> 00:03:10,060
+All of them are being put in, and now my job is to turn off the quad-CAN filter
+
+31
+00:03:10,060 --> 00:03:13,060
+and then turn it on again.
+
+32
+00:03:13,060 --> 00:03:17,060
+Mind you, all of the C and C1 connections here are plugged in,
+
+33
+00:03:17,060 --> 00:03:25,060
+which means that all of the connections should show an okay time for each of those connections.
+
+34
+00:03:25,060 --> 00:03:34,720
+It shows that the test is successful, and once the test is failed,
+
+35
+00:03:34,720 --> 00:03:37,720
+it's going to say test is failed.
+
+36
+00:03:37,720 --> 00:03:39,720
+And that's pretty much it.
+
+37
+00:03:39,720 --> 00:03:45,720
+That is my whole quad-CAN filter tester software project.
+
+38
+00:03:45,720 --> 00:03:52,720
+So hopefully you've enjoyed this, and take care.
