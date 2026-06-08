@@ -1,13 +1,25 @@
 # Danielis Maizelis — Personal Website
 
+**Frontend**
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26.svg?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6.svg?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2020-F7DF1E.svg?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![GSAP](https://img.shields.io/badge/GSAP-3.12-88CE02.svg?logo=greensock&logoColor=white)](https://gsap.com/)
 [![Lenis](https://img.shields.io/badge/Lenis-1.1-000000.svg)](https://github.com/darkroomengineering/lenis)
+
+**Media pipeline**
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![FFmpeg](https://img.shields.io/badge/FFmpeg-media-007808.svg?logo=ffmpeg&logoColor=white)](https://ffmpeg.org/)
 [![faster-whisper](https://img.shields.io/badge/faster--whisper-captions-ff6f00.svg)](https://github.com/SYSTRAN/faster-whisper)
-[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-222.svg?logo=github)](https://danielismaizelis.github.io/webpage/)
+[![CTranslate2](https://img.shields.io/badge/CTranslate2-inference-4B8BBE.svg)](https://github.com/OpenNMT/CTranslate2)
+[![libass](https://img.shields.io/badge/libass-subtitles-555.svg)](https://github.com/libass/libass)
+
+**Dev & deploy**
+[![Bash](https://img.shields.io/badge/Bash-shell-4EAA25.svg?logo=gnubash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![Git](https://img.shields.io/badge/Git-vcs-F05032.svg?logo=git&logoColor=white)](https://git-scm.com/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-deployed-222.svg?logo=github&logoColor=white)](https://danielismaizelis.github.io/webpage/)
+[![Linux](https://img.shields.io/badge/Built%20on-Linux-FCC624.svg?logo=linux&logoColor=black)](https://www.kernel.org/)
+[![Markdown](https://img.shields.io/badge/Markdown-docs-000000.svg?logo=markdown&logoColor=white)](https://commonmark.org/)
 
 An editorial-style portfolio of the projects I've built — drones, terminal apps, embedded systems, mobile apps — written by hand in plain HTML/CSS/JS so every page feels like a magazine spread, not a template.
 
