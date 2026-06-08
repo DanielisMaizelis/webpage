@@ -146,6 +146,70 @@ if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
   });
 }
 
+// Mobile full-screen menu — burger button + GSAP overlay
+(function mobileMenu() {
+  const header = document.querySelector(".site-header");
+  const nav = document.querySelector(".nav-links");
+  if (!header || !nav) return;
+
+  const burger = document.createElement("button");
+  burger.className = "burger";
+  burger.setAttribute("aria-label", "Open menu");
+  burger.setAttribute("aria-expanded", "false");
+  burger.innerHTML = "<span></span><span></span>";
+  header.appendChild(burger);
+
+  const menu = document.createElement("nav");
+  menu.className = "mobile-menu";
+  const ul = document.createElement("ul");
+  Array.from(nav.querySelectorAll("a")).forEach(a => {
+    const li = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = a.getAttribute("href");
+    link.textContent = a.textContent.trim();
+    if (a.classList.contains("active")) link.classList.add("active");
+    if (a.classList.contains("cv-btn")) link.setAttribute("download", "");
+    li.appendChild(link);
+    ul.appendChild(li);
+  });
+  menu.appendChild(ul);
+  const foot = document.createElement("div");
+  foot.className = "menu-footer";
+  foot.innerHTML = "<span>Danielis Maizelis</span><span>2026</span>";
+  menu.appendChild(foot);
+  document.body.appendChild(menu);
+
+  const linkEls = menu.querySelectorAll("a");
+
+  let isOpen = false;
+  function open() {
+    isOpen = true;
+    burger.classList.add("is-open");
+    burger.setAttribute("aria-expanded", "true");
+    menu.classList.add("is-open");
+    document.body.classList.add("menu-open");
+  }
+  function close() {
+    isOpen = false;
+    burger.classList.remove("is-open");
+    burger.setAttribute("aria-expanded", "false");
+    menu.classList.remove("is-open");
+    document.body.classList.remove("menu-open");
+  }
+
+  burger.addEventListener("click", () => (isOpen ? close() : open()));
+
+  linkEls.forEach(a => {
+    a.addEventListener("click", () => {
+      if (isOpen) close();
+    });
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isOpen) close();
+  });
+})();
+
 // Page transition overlay
 const overlay = document.getElementById("page-overlay");
 if (overlay) {
