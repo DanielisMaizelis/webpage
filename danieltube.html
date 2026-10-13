@@ -3,123 +3,219 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Daniel Tube — a custom video platform, built from scratch.">
-  <meta name="theme-color" content="#f3f0ea">
-  <title>Daniel Tube — Danny Maizelis</title>
+  <meta name="description" content="Daniel Tube — a distraction-free terminal YouTube client that turns Hebrew videos into word-by-word English subtitles.">
+  <meta name="theme-color" content="#0e0d0c">
+  <title>Daniel Tube — Danielis Maizelis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="page-overlay" id="page-overlay"></div>
+<script>
+  // "expand" when a project card grew into this page's hero on the previous page
+  try { window.__v2nav = sessionStorage.getItem("v2-nav"); sessionStorage.removeItem("v2-nav"); } catch (e) {}
+  if (window.__v2nav !== "expand") {
+    document.documentElement.classList.add("intro-pending");
+    setTimeout(function () { document.documentElement.classList.remove("intro-pending"); }, 3000);
+  }
+  if (window.__v2nav === "expand") {
+    document.documentElement.classList.add("from-expand");
+    try {
+      var poster = sessionStorage.getItem("v2-poster");
+      sessionStorage.removeItem("v2-poster");
+      if (poster) document.documentElement.style.setProperty("--hero-poster", 'url("' + poster + '")');
+    } catch (e) {}
+  }
+</script>
 
-<header class="site-header">
-  <a class="brand" href="main.html">Danielis Maizelis</a>
-  <ul class="nav-links">
-    <li><a href="main.html">Index</a></li>
-    <li><a href="rl-forest.html">RL Forest</a></li>
-    <li><a href="danieltube.html" class="active">Daniel Tube</a></li>
-    <li><a href="other-projects.html">Other Projects</a></li>
-    <li><a href="media/cv.pdf" class="cv-btn" download>Download CV</a></li>
-  </ul>
+<header class="nav">
+  <a class="nav-brand" href="index.html">Daniel Maizel</a>
+  <nav class="nav-pill" aria-label="Main">
+    <a href="index.html">Home</a>
+    <a href="rl-forest.html">RL Forest</a>
+    <a href="danieltube.html" class="is-active">Daniel Tube</a>
+    <a href="class-ab-amp.html">Class AB Amp</a>
+    <a href="gta-radio.html">GTA Radio</a>
+    <a href="water-tracker.html">Water Tracker</a>
+    <a href="other-projects.html">Other</a>
+  </nav>
+  <div class="nav-actions">
+    <a class="nav-cta nav-cta-alt" href="media/thesis.pdf" download>
+      <span class="long">Download Recent Thesis</span>
+      <span class="short">Thesis</span>
+      <i class="dot"></i>
+    </a>
+    <a class="nav-cta" href="media/cv.pdf" download>
+      <span class="long">Download CV</span>
+      <i class="dot"></i>
+    </a>
+  </div>
 </header>
 
-<!-- HERO -->
-<section class="hero-full">
-  <video class="hero-video" autoplay muted loop playsinline poster="">
-    <source src="media/danieltube-web.mp4" type="video/mp4">
-  </video>
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <div class="hero-eyebrow">Project 02 · Web Platform</div>
-    <h1 class="hero-title">Fun language learning<br><em> without distractions</em></h1>
-    <div class="hero-meta">
-      <p>Daniel Tube is a terminal based app, used to download and translate any Youtube video, giving translated subtitles for excellent language learning.</p>
-      <a href="#story" class="link-arrow">Scroll — The story</a>
+<main>
+
+  <section class="hero case" id="top">
+    <div class="hero-frame" id="hero-frame" data-intro="Daniel Tube">
+      <video class="hero-video" autoplay muted loop playsinline preload="auto">
+        <source src="media/danieltube-cover-web.mp4" type="video/mp4">
+      </video>
+      <div class="hero-shade"></div>
+
+      <div class="hero-top">
+        <span class="chip">Project 02</span>
+        <span class="chip ghost">Python · TUI · Whisper</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="line"><span>Fun language learning</span></span>
+        <span class="line"><span><em>without distractions.</em></span></span>
+      </h1>
+
+      <div class="hero-bottom">
+        <p>A terminal YouTube client for only the channels you follow: no recommendations, no autoplay. Hebrew videos get word-by-word English subtitles.</p>
+        <a href="#story" class="round-btn" aria-label="Scroll to the story">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 4v16m0 0-6-6m6 6 6-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
     </div>
+  </section>
+
+  <div class="facts">
+    <div class="fact reveal"><span class="label">Year</span><strong>2026</strong></div>
+    <div class="fact reveal"><span class="label">Languages</span><strong>Hebrew → English</strong></div>
+    <div class="fact reveal"><span class="label">Speech model</span><strong>ivrit-ai Whisper large-v3 turbo</strong></div>
+    <div class="fact reveal"><span class="label">Interface</span><strong>Textual TUI · Python</strong></div>
   </div>
-</section>
 
-<!-- LEDE -->
-<section class="editorial" id="story">
-  <span class="eyebrow-mark">Why</span>
-  <p class="lede">
-    YouTube sometimes is too addicting. Making it in a terminal was not only fun, but made the platform seem like YOU are in control.
-    I combined this with AI based whisper api for language learning, making the translated video subtitles.
-
-  </p>
-</section>
-
-
-<!-- ROW: UPLOAD -->
-<section class="editorial">
-  <div class="row-split">
-    <video class="figure-video wide" autoplay muted loop playsinline>
-      <source src="media/danieltube-design-web.mp4" type="video/mp4">
-    </video>
-    <div class="col-text">
-      <span class="eyebrow-mark">01 — Ingest</span>
-      <h3>Terminal youtube<br>with language learning.</h3>
-      <p></p>YouTube is a magic trick that people stopped noticing, a platform that is too addicting. I was thinking of making a terminal based Youtube, that downloads the videos, giving time to respect the videos and the creators that you watch, while
-          removing uneccessary context switching which makes you tired from watching different types of videos so quickly.
-      I combined this philosophy with language learning. 
-      The Whisper api makes the translation subtitles of every video whichever language you want! The translated subtitles gives the on demand translation with constant exposure to new words</p>
+  <section class="case" id="story">
+    <div class="section-head">
+      <span class="label">(01) Why</span>
     </div>
-  </div>
-</section>
+    <p class="statement reveal-words">
+      YouTube is too good at keeping you there. Moving it into the terminal (an explicit channel list, explicit picks, explicit downloads) means the platform stops choosing for you. Add on-demand subtitle translation and every session becomes <em>intentional, and doubles as language practice.</em>
+    </p>
+  </section>
 
-<!-- STACK -->
-<section class="editorial">
-  <span class="eyebrow-mark">Stack</span>
-  <h2 class="display-h">Python. yt-dlp.<br><em>Whisper. FFmpeg.</em></h2>
-</section>
+  <section class="case">
+    <div class="split">
+      <div class="split-media contain reveal">
+        <video muted loop playsinline preload="metadata"><source src="media/danieltube-tui-web.mp4" type="video/mp4"></video>
+        <span class="chip on-media">The app</span>
+      </div>
+      <div class="split-text reveal">
+        <span class="label">01 — Browse</span>
+        <h3>Only the channels you chose.</h3>
+        <p>Your subscriptions are a short list in <em>main.py</em>, nothing recommended and nothing extra. The Textual interface shows channels on the left, the latest 30 videos in the middle (titles translated to English) and a thumbnail with info on the right.</p>
+        <p>Pick a video, or paste any YouTube link, and it is queued: downloaded with yt-dlp, transcribed, translated and saved. A live preview of the subtitles appears at the bottom while it works.</p>
+        <div class="keys">
+          <span><kbd>j</kbd><kbd>k</kbd> move</span>
+          <span><kbd>⏎</kbd> download + translate</span>
+          <span><kbd>D</kbd> download only</span>
+          <span><kbd>u</kbd> paste a link</span>
+          <span><kbd>p</kbd> play</span>
+          <span><kbd>s</kbd> settings</span>
+          <span><kbd>t</kbd> light / dark</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<!-- PULL -->
-<section class="pull-section">
-  <blockquote>
-    The full code lives on GitHub —<br>
-    <a href="https://github.com/DanielisMaizelis/danieltube" target="_blank" rel="noopener">View the Daniel Tube code →</a>
-  </blockquote>
-</section>
+  <section class="case">
+    <div class="section-head">
+      <span class="label">(02) The pipeline</span>
+      <h2 class="section-title">Six steps, <em>all cached.</em></h2>
+    </div>
+    <ol class="steps">
+      <li class="step reveal"><span class="num">01</span><h4>Download</h4><p>yt-dlp pulls the video from a channel pick or a pasted link.</p></li>
+      <li class="step reveal"><span class="num">02</span><h4>Whisper</h4><p>faster-whisper runs locally on the GPU with ivrit-ai's Hebrew fine-tune, giving a timestamp for every word. Falls back to the CPU.</p></li>
+      <li class="step reveal"><span class="num">03</span><h4>Translate</h4><p>Batched Google Translate for each line, plus optional OpenAI for context-aware glosses of every word.</p></li>
+      <li class="step reveal"><span class="num">04</span><h4>Subs</h4><p>Hand-laid-out ASS subtitles, rendered by libass, that build up word by word.</p></li>
+      <li class="step reveal"><span class="num">05</span><h4>Save</h4><p>An .mkv with soft, toggleable subs and no re-encode, or burned into an .mp4.</p></li>
+      <li class="step reveal"><span class="num">06</span><h4>Cloud</h4><p>One key pushes the finished video to iCloud with rclone, ready on the phone.</p></li>
+    </ol>
+    <p class="steps-note reveal">Transcripts and translations are cached per video, so switching subtitle settings re-renders in seconds without running Whisper again.</p>
+  </section>
 
-<!-- NEXT -->
-<a class="image-bleed ph-forest" href="rl-forest.html" style="text-decoration:none;">
-  <div class="bleed-text">
-    <div class="eyebrow-mark" style="color:#f3f0ea; opacity: 0.8;">Next project</div>
-    <h2>RL Forest Drone<br><em>→</em></h2>
-  </div>
-</a>
+  <section class="bleed">
+    <video muted loop playsinline preload="metadata"><source src="media/danieltube-cover-web.mp4" type="video/mp4"></video>
+    <h2>Every word,<br><em>as it's spoken.</em></h2>
+  </section>
 
-<!-- FOOTER -->
-<p class="footer-mega">Let's <em>talk</em>.</p>
-<footer class="site-footer">
-  <div class="footer-grid">
-    <div>
-      <h4>Email</h4>
-      <a href="mailto:maizeldaniel@proton.me">maizeldaniel@proton.me</a>
+  <section class="case">
+    <div class="split reverse">
+      <div class="split-media sub-demo-wrap reveal">
+        <div class="sub-demo" aria-label="Example of the word-by-word subtitles">
+          <div class="col"><span class="gloss">when all</span><span class="tr">keshekal</span></div>
+          <div class="col"><span class="gloss">poor</span><span class="tr">aniyim</span></div>
+          <div class="col"><span class="gloss">in the world</span><span class="tr">ba'olam</span></div>
+          <div class="col"><span class="gloss">not</span><span class="tr">lo</span></div>
+          <div class="col"><span class="gloss">I will reach</span><span class="tr">aspiko</span></div>
+          <div class="col"><span class="gloss">were</span><span class="tr">hayu</span></div>
+          <div class="col"><span class="gloss">do</span><span class="tr">osim</span></div>
+        </div>
+        <span class="chip on-media">Subtitle preview</span>
+      </div>
+      <div class="split-text dark reveal">
+        <span class="label">02 — Subtitles that teach</span>
+        <h3>Meaning on top, sound underneath.</h3>
+        <p>Like YouTube captions, but each Hebrew word becomes its own column that appears the moment it is spoken, left to right. The English meaning sits on top, how it sounds sits underneath, and the word being spoken glows gold.</p>
+        <p>The pronunciation comes from <em>Dicta Nakdan</em> vowel points, so מוח reads <em>moach</em>, not "much". The Hebrew letters, vowel points, a full-sentence line and right-to-left order can all be switched on in the settings.</p>
+      </div>
     </div>
-    <div>
-      <h4>Pages</h4>
-      <a href="main.html">Index</a><br>
-      <a href="rl-forest.html">RL Forest</a><br>
-      <a href="danieltube.html">Daniel Tube</a>
+  </section>
+
+  <section class="case">
+    <div class="section-head">
+      <span class="label">(03) Stack</span>
     </div>
-    <div>
-      <h4>LinkedIn</h4>
-      <a href="#" target="_blank" rel="noopener">Danielis Maizelis →</a>
+    <h2 class="big-statement reveal">Python. yt-dlp. faster-whisper.<br><em>Textual. FFmpeg. libass.</em></h2>
+  </section>
+
+  <section class="case">
+    <div class="cta-card reveal">
+      <div>
+        <span class="label">Source</span>
+        <h2>The full code lives on <em>GitHub.</em></h2>
+      </div>
+      <div class="cta-links">
+        <a href="https://github.com/DanielisMaizelis/danieltube" target="_blank" rel="noopener" data-cursor="Code">View the Daniel Tube code <span class="arrow">↗</span></a>
+      </div>
     </div>
-    <div>
-      <h4>GitHub</h4>
-      <a href="https://github.com/DanielisMaizelis" target="_blank" rel="noopener">@DanielisMaizelis →</a>
+  </section>
+
+  <a class="next" href="other-projects.html" data-cursor="Next">
+    <video muted loop playsinline preload="metadata"><source src="media/robocar-web.mp4" type="video/mp4"></video>
+    <span class="label">Next — Everything else</span>
+    <h2>Other projects <span class="round-btn" aria-hidden="true">→</span></h2>
+  </a>
+
+  <section class="contact" id="contact">
+    <div class="contact-card reveal">
+      <span class="label">Contact</span>
+      <h2 class="contact-title">Let's <em>talk.</em></h2>
+      <a class="mail-pill" href="mailto:maizeldaniel@proton.me" data-cursor="Write">
+        maizeldaniel@proton.me <span class="arrow">↗</span>
+      </a>
+      <div class="contact-links">
+        <a href="https://github.com/DanielisMaizelis" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/daniel-maizel-63a700192" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="media/cv.pdf" download>CV ↓</a>
+      </div>
     </div>
-  </div>
-  <div class="footer-bottom">
-    <span>© 2026 Danielis Maizelis (Daniel Maizel)</span>
-    <span>Built in Linux</span>
-  </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <span>© 2026 Danielis Maizelis (Daniel Maizel)</span>
+  <a href="#top" class="to-top">Back to top ↑</a>
+  <span>Built in Linux</span>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
-<script src="smooth-scroll.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="site.js"></script>
 </body>
 </html>

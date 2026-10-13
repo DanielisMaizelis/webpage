@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Water Tracker — a PCB and firmware project by Danielis Maizelis (ongoing).">
+  <meta name="theme-color" content="#0e0d0c">
+  <title>Water Tracker — Danielis Maizelis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<script>
+  // "expand" when a project card grew into this page's hero on the previous page
+  try { window.__v2nav = sessionStorage.getItem("v2-nav"); sessionStorage.removeItem("v2-nav"); } catch (e) {}
+  if (window.__v2nav !== "expand") {
+    document.documentElement.classList.add("intro-pending");
+    setTimeout(function () { document.documentElement.classList.remove("intro-pending"); }, 3000);
+  }
+  if (window.__v2nav === "expand") {
+    document.documentElement.classList.add("from-expand");
+    try {
+      var poster = sessionStorage.getItem("v2-poster");
+      sessionStorage.removeItem("v2-poster");
+      if (poster) document.documentElement.style.setProperty("--hero-poster", 'url("' + poster + '")');
+    } catch (e) {}
+  }
+</script>
+
+<header class="nav">
+  <a class="nav-brand" href="index.html">Daniel Maizel</a>
+  <nav class="nav-pill" aria-label="Main">
+    <a href="index.html">Home</a>
+    <a href="rl-forest.html">RL Forest</a>
+    <a href="danieltube.html">Daniel Tube</a>
+    <a href="class-ab-amp.html">Class AB Amp</a>
+    <a href="gta-radio.html">GTA Radio</a>
+    <a href="water-tracker.html" class="is-active">Water Tracker</a>
+    <a href="other-projects.html">Other</a>
+  </nav>
+  <div class="nav-actions">
+    <a class="nav-cta nav-cta-alt" href="media/thesis.pdf" download>
+      <span class="long">Download Recent Thesis</span>
+      <span class="short">Thesis</span>
+      <i class="dot"></i>
+    </a>
+    <a class="nav-cta" href="media/cv.pdf" download>
+      <span class="long">Download CV</span>
+      <i class="dot"></i>
+    </a>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero case" id="top">
+    <div class="hero-frame" id="hero-frame" data-intro="Water Tracker">
+      <div class="hero-shade"></div>
+
+      <div class="hero-top">
+        <span class="chip">Project 05</span>
+        <span class="chip ghost">PCB + Firmware · Ongoing</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="line"><span>Water Tracker</span></span>
+        <span class="line"><span><em>PCB + firmware.</em></span></span>
+      </h1>
+
+      <div class="hero-bottom">
+        <p></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="contact-card reveal">
+      <span class="label">Contact</span>
+      <h2 class="contact-title">Let's <em>talk.</em></h2>
+      <a class="mail-pill" href="mailto:maizeldaniel@proton.me" data-cursor="Write">
+        maizeldaniel@proton.me <span class="arrow">↗</span>
+      </a>
+      <div class="contact-links">
+        <a href="https://github.com/DanielisMaizelis" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/daniel-maizel-63a700192" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="media/cv.pdf" download>CV ↓</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <span>© 2026 Danielis Maizelis (Daniel Maizel)</span>
+  <a href="#top" class="to-top">Back to top ↑</a>
+  <span>Built in Linux</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="site.js"></script>
+</body>
+</html>

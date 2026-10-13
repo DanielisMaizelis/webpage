@@ -5,7 +5,6 @@
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6.svg?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2020-F7DF1E.svg?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![GSAP](https://img.shields.io/badge/GSAP-3.12-88CE02.svg?logo=greensock&logoColor=white)](https://gsap.com/)
-[![Lenis](https://img.shields.io/badge/Lenis-1.1-000000.svg)](https://github.com/darkroomengineering/lenis)
 
 **Media pipeline**
 [![Python](https://img.shields.io/badge/Python-3.8+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
@@ -21,7 +20,7 @@
 [![Linux](https://img.shields.io/badge/Built%20on-Linux-FCC624.svg?logo=linux&logoColor=black)](https://www.kernel.org/)
 [![Markdown](https://img.shields.io/badge/Markdown-docs-000000.svg?logo=markdown&logoColor=white)](https://commonmark.org/)
 
-An editorial-style portfolio of the projects I've built — drones, terminal apps, embedded systems, mobile apps — written by hand in plain HTML/CSS/JS so every page feels like a magazine spread, not a template.
+A portfolio of the projects I've built — drones, terminal apps, embedded systems, mobile apps — written by hand in plain HTML/CSS/JS with rounded cards and motion that carries you from one project into the next.
 
 🔗 **Live:** [danielismaizelis.github.io/webpage](https://danielismaizelis.github.io/webpage/)
 
@@ -31,18 +30,22 @@ An editorial-style portfolio of the projects I've built — drones, terminal app
 
 | File | What's there |
 |---|---|
-| `main.html` / `index.html` | Landing — intro, hobbies, stack |
+| `index.html` | Landing — intro video, résumé bento (experience, education, skills), selected work |
 | `rl-forest.html` | RL drone agent flying through a procedural forest (AirSim + PPO) |
-| `danieltube.html` | Terminal YouTube client with Whisper-translated subtitles |
+| `danieltube.html` | Terminal YouTube client with word-by-word translated subtitles |
+| `class-ab-amp.html` | Class AB amplifier — PCB design (placeholder) |
+| `gta-radio.html` | GTA Radio — car radio PCB + firmware (ongoing, placeholder) |
+| `water-tracker.html` | Water Tracker — PCB + firmware (ongoing, placeholder) |
 | `other-projects.html` | Quad CAN tester, Subaru dashboard, Axis parking app, Robocar |
+| `main.html` | Redirect to `index.html` for old links |
 
 ---
 
 ## Stack
 
-- **Markup & style** — hand-written HTML5 + CSS3 (cream/ink editorial palette, custom `.editorial` / `.row-split` / `.figure-video` system in `styles.css`)
-- **Motion** — [GSAP](https://gsap.com/) for animations, [Lenis](https://github.com/darkroomengineering/lenis) for smooth scrolling (`smooth-scroll.js`)
-- **Media pipeline** — [FFmpeg](https://ffmpeg.org/) for web-optimized H.264 (`-crf 30 -preset slow -movflags +faststart`)
+- **Markup & style** — hand-written HTML5 + CSS3: a rounded, card-based system in `styles.css` (bento cards, split media/text rows, full-bleed video panels, pill nav that becomes a bottom tab bar on small screens)
+- **Motion** — [GSAP](https://gsap.com/) + ScrollTrigger in `site.js`: the intro video card that opens to the cover, project cards that glide to the centre and expand into the next page's hero (handing over the exact video frame), scroll-scrubbed hero and word-by-word text reveals
+- **Media pipeline** — [FFmpeg](https://ffmpeg.org/) for web-optimized H.264 (`-crf 26–30 -preset slow -movflags +faststart`)
 - **Captioning** — `caption.py` uses [faster-whisper](https://github.com/SYSTRAN/faster-whisper) to transcribe audio and burn subtitles directly into the video via FFmpeg's `subtitles=` filter
 - **Hosting** — [GitHub Pages](https://pages.github.com/), static, free, instant deploy on push
 
@@ -52,15 +55,18 @@ An editorial-style portfolio of the projects I've built — drones, terminal app
 
 ```
 PersonalWebsite/
-├── index.html              # GitHub Pages root
-├── main.html               # Landing
+├── index.html              # Landing (GitHub Pages root)
 ├── rl-forest.html          # Project 01
 ├── danieltube.html         # Project 02
+├── class-ab-amp.html       # Project 03
+├── gta-radio.html          # Project 04
+├── water-tracker.html      # Project 05
 ├── other-projects.html     # Smaller builds
-├── styles.css              # Editorial design system
-├── smooth-scroll.js        # Lenis + GSAP glue
+├── main.html               # → index.html
+├── styles.css              # Design system
+├── site.js                 # GSAP motion + transitions
 ├── caption.py              # Whisper → SRT → burned-in captions
-└── media/                  # videos, posters, cv.pdf, thesis.pdf
+└── media/                  # videos, logos, cv.pdf, thesis.pdf
 ```
 
 ---
