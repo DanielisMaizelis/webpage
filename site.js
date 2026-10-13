@@ -247,6 +247,39 @@ document.querySelectorAll(".sub-demo").forEach(demo => {
   }, 550);
 });
 
+// ---------- sound toggles: one video with sound at a time ----------
+const soundBtns = Array.from(document.querySelectorAll(".sound-btn"));
+const soundVideo = btn => {
+  const scope = btn.closest(".project-media, .split-media, .hero-frame");
+  return scope && scope.querySelector("video");
+};
+function setSound(btn, on) {
+  btn.classList.toggle("is-on", on);
+  btn.setAttribute("aria-pressed", String(on));
+  btn.setAttribute("aria-label", on ? "Turn sound off" : "Turn sound on");
+  btn.querySelector(".sound-label").textContent = on ? "Sound on" : "Sound off";
+}
+soundBtns.forEach(btn => {
+  const toggle = e => {
+    // The button can sit inside a project card link — don't navigate
+    e.preventDefault();
+    e.stopPropagation();
+    const v = soundVideo(btn);
+    if (!v) return;
+    const on = v.muted;
+    soundBtns.forEach(other => {
+      const ov = soundVideo(other);
+      if (ov && ov !== v) ov.muted = true;
+      setSound(other, false);
+    });
+    v.muted = !on;
+    if (on) { v.volume = 1; play(v); }
+    setSound(btn, on);
+  };
+  btn.addEventListener("click", toggle);
+  btn.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") toggle(e); });
+});
+
 // ---------- in-page anchors scroll smoothly ----------
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener("click", e => {

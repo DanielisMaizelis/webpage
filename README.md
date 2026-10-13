@@ -33,7 +33,7 @@ A portfolio of the projects I've built — drones, terminal apps, embedded syste
 | `index.html` | Landing — intro video, résumé bento (experience, education, skills), selected work |
 | `rl-forest.html` | RL drone agent flying through a procedural forest (AirSim + PPO) |
 | `danieltube.html` | Terminal YouTube client with word-by-word translated subtitles |
-| `class-ab-amp.html` | Class AB amplifier — PCB design (placeholder) |
+| `class-ab-amp.html` | Class AB amplifier — PCB on the bench, video with a sound toggle |
 | `gta-radio.html` | GTA Radio — car radio PCB + firmware (ongoing, placeholder) |
 | `water-tracker.html` | Water Tracker — PCB + firmware (ongoing, placeholder) |
 | `other-projects.html` | Quad CAN tester, Subaru dashboard, Axis parking app, Robocar |

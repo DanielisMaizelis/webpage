@@ -366,6 +366,45 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
 }
 .project-xl { grid-column: span 2; }
 
+/* full-width featured card with a portrait video on the left */
+.project-wide {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  gap: 10px;
+}
+.project-wide .project-media { aspect-ratio: 4 / 5; }
+.project-wide .project-info {
+  align-content: end;
+  padding: clamp(18px, 3vw, 48px);
+}
+.project-wide .project-info h3 { font-size: clamp(32px, 5vw, 84px); }
+.project-wide .project-info p { font-size: clamp(15px, 1.3vw, 19px); }
+
+/* sound toggle on videos that have audio */
+.sound-btn {
+  position: absolute; left: 16px; bottom: 16px; z-index: 3;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 14px 9px 11px;
+  border-radius: 999px;
+  background: rgba(14, 13, 12, 0.55);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.3s, color 0.3s, transform 0.3s var(--ease);
+}
+.sound-btn:hover { transform: scale(1.05); }
+.sound-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.sound-btn .waves { display: none; }
+.sound-btn.is-on { background: var(--accent); border-color: transparent; }
+.sound-btn.is-on .waves { display: inline; }
+.sound-btn.is-on .cross { display: none; }
+.hero-bottom .sound-btn { position: static; }
+
 /* divider row inside the project grid */
 .era {
   grid-column: 1 / -1;
@@ -895,6 +934,7 @@ kbd {
   .card-photo { min-height: 420px; }
   .skill-groups { grid-template-columns: 1fr; }
   .projects { grid-template-columns: 1fr; }
+  .project-wide { grid-template-columns: 1fr; }
   .project, .project-xl { grid-column: auto; }
   .project-media.tall { aspect-ratio: 4 / 4; }
   .marquee { padding: 12px 0; }
