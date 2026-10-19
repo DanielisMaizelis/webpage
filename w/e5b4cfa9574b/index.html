@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Shalosh</title>
+<meta name="description" content="Three Hebrew words a day, pinned over whatever you're watching.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#100f0e">
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shalosh">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+
+<!-- ============================ library ============================ -->
+<div class="shell" id="shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <h1>Shalosh</h1>
+    </div>
+    <button class="ghost-btn" id="storage-btn" type="button" aria-label="Storage used">
+      <span id="storage-text">—</span>
+    </button>
+  </header>
+
+  <!-- the three slots live here, and move into the player when one opens -->
+  <section class="today" id="today" aria-label="Today's three words">
+    <div class="today-head">
+      <span class="label">Today</span>
+      <span class="label dim" id="today-date"></span>
+    </div>
+    <div class="slots" id="slots"></div>
+  </section>
+
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" class="tab is-on" data-tab="video" aria-selected="true">Videos</button>
+    <button role="tab" class="tab" data-tab="audio" aria-selected="false">Audio</button>
+    <button role="tab" class="tab" data-tab="words" aria-selected="false">Words</button>
+    <span class="tab-ink" id="tab-ink" aria-hidden="true"></span>
+  </nav>
+
+  <main class="library" id="library"></main>
+
+  <footer class="dock">
+    <button class="add-btn" id="add-btn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Add from Files
+    </button>
+  </footer>
+</div>
+
+<!-- ============================ player ============================= -->
+<section class="player" id="player" hidden aria-label="Player">
+  <div class="stage" id="stage">
+    <video id="video" playsinline webkit-playsinline preload="metadata"></video>
+    <div class="art" id="art" hidden><img id="art-img" alt=""></div>
+    <div class="scrim top"></div>
+    <div class="scrim bottom"></div>
+
+    <!-- #today is moved in here while playing -->
+
+    <div class="chrome" id="chrome">
+      <div class="chrome-top">
+        <button class="icon-btn" id="back-btn" type="button" aria-label="Back to library">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="now">
+          <span class="label dim" id="now-kind">Video</span>
+          <p id="now-title"></p>
+        </div>
+      </div>
+
+      <div class="chrome-mid">
+        <button class="icon-btn big" id="back10" type="button" aria-label="Back 10 seconds">
+          <svg viewBox="0 0 24 24" class="solid"><path d="M12 5V1L7 6l5 5V7a6 6 0 11-6 6H4a8 8 0 108-8z"/></svg>
+          <b>10</b>
+        </button>
+        <button class="play-btn" id="play-btn" type="button" aria-label="Play">
+          <svg viewBox="0 0 24 24" id="play-icon"><path d="M7 4l13 8-13 8z"/></svg>
+        </button>
+        <button class="icon-btn big" id="fwd10" type="button" aria-label="Forward 10 seconds">
+          <svg viewBox="0 0 24 24" class="solid"><path d="M12 5V1l5 5-5 5V7a6 6 0 106 6h2a8 8 0 11-8-8z"/></svg>
+          <b>10</b>
+        </button>
+      </div>
+
+      <div class="chrome-bottom">
+        <div class="scrub" id="scrub">
+          <div class="track"><span class="fill" id="fill"></span><span class="knob" id="knob"></span></div>
+          <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="Seek">
+        </div>
+        <div class="times">
+          <span id="t-now">0:00</span>
+          <button class="rate" id="rate-btn" type="button">1×</button>
+          <span id="t-left">-0:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ word sheet ========================= -->
+<div class="sheet-wrap" id="sheet-wrap" hidden>
+  <div class="sheet-bg" id="sheet-bg"></div>
+  <form class="sheet" id="sheet" autocomplete="off">
+    <span class="grabber" aria-hidden="true"></span>
+    <div class="sheet-head">
+      <span class="label" id="sheet-label">Word one</span>
+      <button class="ghost-btn danger" id="sheet-del" type="button" hidden>Remove</button>
+    </div>
+
+    <input class="he" id="f-he" dir="rtl" lang="he" placeholder="מילה" aria-label="Hebrew word">
+    <div class="suggest" id="suggest" hidden></div>
+    <input class="en" id="f-en" placeholder="what it means" aria-label="Meaning">
+    <input class="tr" id="f-tr" placeholder="how it sounds (optional)" aria-label="Transliteration">
+
+    <div class="sheet-foot">
+      <button class="ghost-btn" id="sheet-cancel" type="button">Cancel</button>
+      <button class="save-btn" id="sheet-save" type="submit">Save word</button>
+    </div>
+  </form>
+</div>
+
+<input type="file" id="filepick" multiple accept="video/*,audio/*,image/*,.json,.mkv,.mp4,.m4v,.mov,.mp3,.m4a" hidden>
+<div class="toast" id="toast" hidden></div>
+<div class="grain" aria-hidden="true"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

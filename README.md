@@ -45,6 +45,7 @@ A portfolio of the projects I've built — drones, terminal apps, embedded syste
 
 - **Markup & style** — hand-written HTML5 + CSS3: a rounded, card-based system in `styles.css` (bento cards, split media/text rows, full-bleed video panels, pill nav that becomes a bottom tab bar on small screens)
 - **Motion** — [GSAP](https://gsap.com/) + ScrollTrigger in `site.js`: the intro video card that opens to the cover, project cards that glide to the centre and expand into the next page's hero (handing over the exact video frame), scroll-scrubbed hero and word-by-word text reveals
+- **Globe** — raw WebGL fragment shader in `globe.js`: a dotted Earth (land mask `media/globe-land.png`) with a Vilnius pin, auto-spin and drag-to-spin
 - **Media pipeline** — [FFmpeg](https://ffmpeg.org/) for web-optimized H.264 (`-crf 26–30 -preset slow -movflags +faststart`)
 - **Captioning** — `caption.py` uses [faster-whisper](https://github.com/SYSTRAN/faster-whisper) to transcribe audio and burn subtitles directly into the video via FFmpeg's `subtitles=` filter
 - **Hosting** — [GitHub Pages](https://pages.github.com/), static, free, instant deploy on push
@@ -65,6 +66,7 @@ PersonalWebsite/
 ├── main.html               # → index.html
 ├── styles.css              # Design system
 ├── site.js                 # GSAP motion + transitions
+├── globe.js                # WebGL spinning globe on the About card
 ├── caption.py              # Whisper → SRT → burned-in captions
 └── media/                  # videos, logos, cv.pdf, thesis.pdf
 ```

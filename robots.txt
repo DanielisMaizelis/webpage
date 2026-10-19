@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /w/
+
+Sitemap: https://danielismaizelis.github.io/webpage/sitemap.xml
