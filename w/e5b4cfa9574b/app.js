@@ -226,8 +226,8 @@ function renderLibrary() {
         <p>Files are copied onto this device, so they play with no signal — on a plane, on the Tube, anywhere.</p>
         <div class="steps">
           <div><b>01</b><span>Tap <strong>Add from Files</strong> below.</span></div>
-          <div><b>02</b><span>Browse to iCloud Drive → Hebrew Videos.</span></div>
-          <div><b>03</b><span>Select the ${state.tab === "video" ? "mp4" : "mp3"} and its .jpg cover together.</span></div>
+          <div><b>02</b><span>Browse to <strong>iCloud Drive → Hebrew Videos</strong>.</span></div>
+          <div><b>03</b><span>Select the ${state.tab === "video" ? "mp4" : "mp3"} together with its <strong>.jpg</strong> cover and <strong>.json</strong> word list — all three at once.</span></div>
         </div>
       </div>`;
     return;
@@ -239,6 +239,14 @@ function renderLibrary() {
   main.appendChild(grid);
 }
 
+/* one object URL per cover, kept for the life of the page instead of a new
+   one on every re-render */
+const thumbs = new WeakMap();
+function thumbURL(blob) {
+  if (!thumbs.has(blob)) thumbs.set(blob, URL.createObjectURL(blob));
+  return thumbs.get(blob);
+}
+
 function card(item) {
   const seen = state.progress[item.key];
   const pct = seen && item.duration ? Math.min(100, (seen / item.duration) * 100) : 0;
@@ -248,7 +256,7 @@ function card(item) {
   el.innerHTML = `
     <div class="thumb">
       ${item.cover
-        ? `<img alt="" src="${URL.createObjectURL(item.cover)}">`
+        ? `<img alt="" src="${thumbURL(item.cover)}">`
         : `<span class="fallback"><svg viewBox="0 0 24 24">${item.kind === "video"
             ? '<path d="M4 6h16v12H4z"/><path d="M10 9.5l5 2.5-5 2.5z"/>'
             : '<path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>'}
@@ -303,50 +311,210 @@ function renderHistory(main) {
 
 /* ------------------------------------------------------- adding files */
 
+/* Copying a film off iCloud Drive takes as long as it takes. The panel
+   below reports every step so it is never a button that does nothing. */
+
+const Imp = {
+  open(total) {
+    this.total = Math.max(1, total);
+    this.at = 0;
+    this.now = "";
+    $("#imp-list").innerHTML = "";
+    $("#imp-done").hidden = true;
+    $("#imp-spin").hidden = false;
+    $("#imp-stage").textContent = "Copying onto this device";
+    $("#imp-fill").style.width = "0%";
+    $("#imp-now").textContent = "";
+    $("#import-wrap").hidden = false;
+    this.count();
+    quota();
+  },
+  count() { $("#imp-count").textContent = `${Math.min(this.at + 1, this.total)} of ${this.total}`; },
+  file(name) { this.now = name; this.count(); this.step(""); this.bar(0); },
+  step(text) { $("#imp-now").textContent = text ? `${this.now} — ${text}` : this.now; },
+  bar(fraction) {
+    const whole = (this.at + Math.max(0, Math.min(1, fraction))) / this.total;
+    $("#imp-fill").style.width = (whole * 100).toFixed(1) + "%";
+  },
+  next() { this.at++; },
+  row(ok, name, why) {
+    const li = document.createElement("li");
+    li.className = ok ? "ok" : "no";
+    li.innerHTML = `<svg class="tick" viewBox="0 0 24 24">${ok
+        ? '<path d="M4 13l5 5L20 7"/>'
+        : '<circle cx="12" cy="12" r="9"/><path d="M12 7v7M12 17h.01"/>'}</svg>
+      <span><b>${esc(name)}</b>${why ? `<span class="why">${esc(why)}</span>` : ""}</span>`;
+    $("#imp-list").appendChild(li);
+    $("#imp-list").scrollTop = 1e6;
+  },
+  finish(summary) {
+    $("#imp-fill").style.width = "100%";
+    $("#imp-spin").hidden = true;
+    $("#imp-stage").textContent = "Finished";
+    $("#imp-count").textContent = summary;
+    $("#imp-now").textContent = "";
+    $("#imp-done").hidden = false;
+    quota();
+  },
+  close() { $("#import-wrap").hidden = true; },
+};
+
+async function quota() {
+  if (!navigator.storage || !navigator.storage.estimate) return;
+  try {
+    const { usage = 0, quota: q = 0 } = await navigator.storage.estimate();
+    const gb = n => n < 1e9 ? Math.round(n / 1e6) + " MB" : (n / 1e9).toFixed(n >= 1e10 ? 0 : 1) + " GB";
+    $("#imp-quota").textContent = q ? `${gb(usage)} used of ${gb(q)}` : `${gb(usage)} used`;
+  } catch { /* nothing to show */ }
+}
+
+/* Reads the file through once and throws the bytes away. That forces
+   iCloud to hand over a real file, surfaces a read error instead of a
+   silent nothing, and gives an honest percentage — all at constant memory. */
+async function prefetch(file, onProgress) {
+  if (!file.stream) return;
+  const reader = file.stream().getReader();
+  let read = 0, painted = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      read += value.byteLength;
+      if (performance.now() - painted > 90) { painted = performance.now(); onProgress(read / (file.size || 1)); }
+    }
+  } finally {
+    try { reader.cancel(); } catch { /* already closed */ }
+  }
+  onProgress(1);
+}
+
+const SUSPECT = /\.(mkv|avi|wmv|flv|ts|ogv|ogg|opus|wma|m2ts)$/i;
+
+function why(file) {
+  if (/\.mkv$/i.test(file.name))
+    return "Safari cannot open Matroska. Turn on the MP4 phone copy in DanielTube and add that instead.";
+  if (SUSPECT.test(file.name))
+    return "This container is not one Safari can play — an MP4 or an MP3 will work.";
+  return "This device could not read the file. It may still be downloading from iCloud.";
+}
+
 async function addFiles(fileList) {
   const files = [...fileList];
   if (!files.length) return;
-
   const base = name => name.replace(/\.[^.]+$/, "");
-  const covers = new Map();
-  const lists = new Map();
-  for (const f of files) {
-    if (f.type.startsWith("image/")) covers.set(base(f.name), f);
-    else if (/\.json$/i.test(f.name)) lists.set(base(f.name), f);
-  }
 
-  let added = 0, skipped = 0;
+  /* split the batch: media, cover art, word lists */
+  const covers = new Map(), lists = new Map(), side = new Set();
   for (const f of files) {
+    if (f.type.startsWith("image/") || /\.(jpe?g|png|webp|heic)$/i.test(f.name)) { covers.set(base(f.name), f); side.add(f); }
+    else if (/\.json$/i.test(f.name)) { lists.set(base(f.name), f); side.add(f); }
+  }
+  const media = files.filter(f => !side.has(f));
+
+  /* one video and one word list in the same batch belong together, whatever they are called */
+  const lone = media.length === 1 ? base(media[0].name) : null;
+  if (lone && lists.size === 1 && !lists.has(lone)) lists.set(lone, [...lists.values()][0]);
+  if (lone && covers.size === 1 && !covers.has(lone)) covers.set(lone, [...covers.values()][0]);
+
+  /* art or a word list on its own: attach it to something already here */
+  if (!media.length) return attachSidecars(covers, lists);
+
+  Imp.open(media.length);
+  let added = 0, skipped = 0, failed = 0, firstKind = null;
+
+  for (const f of media) {
+    const name = clean(base(f.name)) || base(f.name);
+    Imp.file(name);
+
     const kind = f.type.startsWith("video/") ? "video"
                : f.type.startsWith("audio/") ? "audio"
-               : /\.(mp4|m4v|mov|mkv|webm)$/i.test(f.name) ? "video"
-               : /\.(mp3|m4a|aac|wav|opus)$/i.test(f.name) ? "audio" : null;
-    if (!kind) continue;
+               : /\.(mp4|m4v|mov|mkv|webm|avi|ogv|ts|m2ts)$/i.test(f.name) ? "video"
+               : /\.(mp3|m4a|aac|wav|opus|ogg|flac|wma)$/i.test(f.name) ? "audio" : null;
+    if (!kind) { Imp.row(false, f.name, "Not a video or an audio file."); failed++; Imp.next(); continue; }
 
     const key = `${f.name}:${f.size}`;
-    if (state.items.some(i => i.key === key)) { skipped++; continue; }
+    if (state.items.some(i => i.key === key)) {
+      Imp.row(true, name, "Already on this device.");
+      skipped++; Imp.next(); continue;
+    }
 
-    toast(`Copying ${base(f.name)}…`);
+    try {
+      Imp.step("reading from iCloud");
+      await prefetch(f, fraction => Imp.bar(fraction * 0.8));
+    } catch (err) {
+      Imp.row(false, name, "iCloud never finished handing the file over — open it once in the Files app, then try again.");
+      failed++; Imp.next(); continue;
+    }
+
+    Imp.step("checking it plays");
+    Imp.bar(0.84);
+    const cover = covers.get(base(f.name)) || null;
+    const read = await probe(f, kind, !cover);
+    if (!read.ok) {
+      Imp.row(false, name, why(f));
+      failed++; Imp.next(); continue;
+    }
+
+    Imp.step("reading cover art");
+    Imp.bar(0.9);
+    const data = lists.has(base(f.name)) ? await readJSON(lists.get(base(f.name))) : null;
     const record = {
-      key, kind, name: clean(base(f.name)) || base(f.name), blob: f, added: Date.now(), duration: 0,
-      cover: covers.get(base(f.name)) || null,
-      words: lists.has(base(f.name)) ? normaliseWords(await readJSON(lists.get(base(f.name)))) : null,
+      key, kind, name, blob: f, added: Date.now(),
+      duration: read.duration || 0,
+      cover: cover || read.cover || (kind === "audio" ? await coverFromTags(f) : null),
+      words: normaliseWords(data),
+      cues: normaliseCues(data),
     };
-    Object.assign(record, await probe(f, kind, !record.cover));
+
+    Imp.step("saving to the device");
+    Imp.bar(0.95);
     try {
       await DB.put(record);
       state.items.push(record);
+      firstKind = firstKind || kind;
       added++;
+      const notes = [record.duration ? fmt(record.duration) : null,
+                     record.cues ? `${record.cues.length} subtitle lines` : null,
+                     record.cover ? "cover art" : null].filter(Boolean);
+      Imp.row(true, name, notes.join(" · "));
     } catch (err) {
-      toast("Not enough room on the device for that one");
-      break;
+      const full = err && /quota/i.test(err.name + err.message);
+      Imp.row(false, name, full
+        ? "No room left in the app's storage. Remove something from the library first."
+        : "The device refused to store it.");
+      failed++;
+      Imp.next();
+      if (full) break;
+      continue;
     }
+    Imp.next();
   }
 
+  if (firstKind && state.tab !== firstKind) selectTab(firstKind);
   renderLibrary();
   updateStorage();
-  if (added) toast(`${added} added${skipped ? `, ${skipped} already here` : ""}`);
-  else if (skipped) toast("Already on this device");
+  Imp.finish([added && `${added} added`, skipped && `${skipped} already here`,
+              failed && `${failed} could not be added`].filter(Boolean).join(" · ") || "Nothing to add");
+  if (!failed && !skipped) setTimeout(() => { if (!$("#import-wrap").hidden) Imp.close(); }, 1400);
+}
+
+/** A .jpg or a .json dropped in on its own, for a file already stored. */
+async function attachSidecars(covers, lists) {
+  let touched = 0;
+  for (const item of state.items) {
+    const match = [...covers.keys(), ...lists.keys()].find(k => clean(k) === item.name || k === item.name);
+    if (!match) continue;
+    if (covers.has(match)) item.cover = covers.get(match);
+    if (lists.has(match)) {
+      const data = await readJSON(lists.get(match));
+      item.words = normaliseWords(data) || item.words;
+      item.cues = normaliseCues(data) || item.cues;
+    }
+    await DB.put(item).catch(() => {});
+    touched++;
+  }
+  renderLibrary();
+  toast(touched ? `Updated ${touched} item${touched > 1 ? "s" : ""}` : "Add the cover or word list together with its video");
 }
 
 async function readJSON(file) {
@@ -368,37 +536,181 @@ function normaliseWords(data) {
     });
   }
   const seen = new Set();
-  return out.filter(w => !seen.has(w.he) && seen.add(w.he)).slice(0, 2000);
+  const list = out.filter(w => !seen.has(w.he) && seen.add(w.he)).slice(0, 2000);
+  return list.length ? list : null;
 }
 
-/** Duration, and a poster frame for a video with no cover beside it. */
+/** Timed lines out of lines.json, so the app can draw the subtitles itself. */
+function normaliseCues(data) {
+  if (!Array.isArray(data)) return null;
+  const cues = [];
+  for (const line of data) {
+    if (!line || !Array.isArray(line.words)) continue;
+    const words = line.words.map(w => ({
+      he: w.pointed || w.text || w.he || "",
+      gl: w.gloss || w.en || "",
+      a: Number(w.start) || 0,
+      b: Number(w.end) || 0,
+    })).filter(w => w.he && w.b >= w.a);
+    if (!words.length || !words.some(w => w.b > 0)) continue;
+    const first = words[0].a;
+    const last = words[words.length - 1].b;
+    cues.push({
+      a: first,
+      b: Math.max(last, first + 0.4),
+      words,
+      groups: (Array.isArray(line.groups) ? line.groups : []).filter(g =>
+        g && g.meaning && Number.isInteger(g.from) && Number.isInteger(g.to) &&
+        g.from >= 0 && g.to > g.from && g.to < words.length),
+    });
+  }
+  cues.sort((x, y) => x.a - y.a);
+  return cues.length ? cues : null;
+}
+
+/* ------------------------------------------------------- cover art in tags */
+
+/** An mp3 from DanielTube carries its artwork inside; dig it out. */
+async function coverFromTags(file) {
+  try {
+    const head = new Uint8Array(await file.slice(0, 10).arrayBuffer());
+    if (head.length === 10 && head[0] === 0x49 && head[1] === 0x44 && head[2] === 0x33) {
+      const hit = id3Cover(head[3], new Uint8Array(await file.slice(10,
+        10 + ((head[6] << 21) | (head[7] << 14) | (head[8] << 7) | head[9])).arrayBuffer()));
+      if (hit) return hit;
+    }
+    return await mp4Cover(file);
+  } catch {
+    return null;
+  }
+}
+
+function id3Cover(version, buf) {
+  const headLen = version === 2 ? 6 : 10;
+  const idLen = version === 2 ? 3 : 4;
+  let i = 0;
+  while (i + headLen <= buf.length) {
+    const id = String.fromCharCode(...buf.subarray(i, i + idLen));
+    if (!/^[A-Z0-9]{3,4}$/.test(id)) return null;
+    const s = buf.subarray(i + idLen);
+    const len = version === 2 ? (s[0] << 16) | (s[1] << 8) | s[2]
+              : version === 4 ? (s[0] << 21) | (s[1] << 14) | (s[2] << 7) | s[3]
+              :                 (s[0] << 24) | (s[1] << 16) | (s[2] << 8) | s[3];
+    if (len <= 0 || i + headLen + len > buf.length) return null;
+    if (id === "APIC" || id === "PIC") {
+      const hit = apicBlob(buf.subarray(i + headLen, i + headLen + len), id === "PIC");
+      if (hit) return hit;
+    }
+    i += headLen + len;
+  }
+  return null;
+}
+
+/** APIC: encoding, mime (or a 3-letter format), picture type, description, bytes. */
+function apicBlob(body, legacy) {
+  if (body.length < 6) return null;
+  const enc = body[0];
+  let mime = "image/jpeg", p = 1;
+  if (legacy) {
+    mime = String.fromCharCode(...body.subarray(1, 4)).toUpperCase() === "PNG" ? "image/png" : "image/jpeg";
+    p = 4;
+  } else {
+    let end = p;
+    while (end < body.length && body[end] !== 0) end++;
+    const text = String.fromCharCode(...body.subarray(p, end));
+    if (/^image\//i.test(text)) mime = text.toLowerCase();
+    else if (/png/i.test(text)) mime = "image/png";
+    p = end + 1;
+  }
+  p += 1;                                        // picture type
+  if (enc === 1 || enc === 2) {                  // UTF-16 description ends on two zeroes
+    while (p + 1 < body.length && !(body[p] === 0 && body[p + 1] === 0)) p += 2;
+    p += 2;
+  } else {
+    while (p < body.length && body[p] !== 0) p++;
+    p += 1;
+  }
+  return p < body.length - 8 ? new Blob([body.subarray(p)], { type: mime }) : null;
+}
+
+/** m4a / mp4 keep artwork in moov → udta → meta → ilst → covr. */
+async function mp4Cover(file) {
+  let off = 0;
+  for (let box = 0; box < 32 && off + 8 < file.size; box++) {
+    const dv = new DataView(await file.slice(off, off + 16).arrayBuffer());
+    if (dv.byteLength < 8) return null;
+    let size = dv.getUint32(0), head = 8;
+    const type = String.fromCharCode(dv.getUint8(4), dv.getUint8(5), dv.getUint8(6), dv.getUint8(7));
+    if (size === 1 && dv.byteLength >= 16) { size = Number(dv.getBigUint64(8)); head = 16; }
+    if (size < head) return null;
+    if (type === "moov") {
+      if (size > 24e6) return null;              // not worth reading a huge moov on a phone
+      return findCovr(new Uint8Array(await file.slice(off + head, off + size).arrayBuffer()), 0);
+    }
+    off += size;
+  }
+  return null;
+}
+
+const NESTED = ["moov", "udta", "meta", "ilst", "trak"];
+
+function findCovr(buf, depth) {
+  const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  let i = 0;
+  while (i + 8 <= buf.length) {
+    const size = dv.getUint32(i);
+    const type = String.fromCharCode(buf[i + 4], buf[i + 5], buf[i + 6], buf[i + 7]);
+    if (size < 8 || i + size > buf.length) return null;
+    if (type === "covr" && i + 24 <= buf.length) {
+      const kind = dv.getUint32(i + 16) & 0xffffff;        // 13 = jpeg, 14 = png
+      return new Blob([buf.subarray(i + 24, i + size)], { type: kind === 14 ? "image/png" : "image/jpeg" });
+    }
+    if (depth < 5 && NESTED.includes(type)) {
+      const skip = type === "meta" ? 4 : 0;                // meta carries version + flags first
+      const hit = findCovr(buf.subarray(i + 8 + skip, i + size), depth + 1);
+      if (hit) return hit;
+    }
+    i += size;
+  }
+  return null;
+}
+
+/** Duration, whether it plays at all, and a poster frame if nothing else offers one. */
 function probe(file, kind, wantPoster) {
   return new Promise(resolve => {
     const el = document.createElement(kind === "video" ? "video" : "audio");
     const url = URL.createObjectURL(file);
-    const done = extra => { URL.revokeObjectURL(url); resolve(extra || {}); };
-    const bail = setTimeout(() => done(), 9000);
+    let settled = false;
+    const done = extra => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(bail);
+      el.removeAttribute("src");
+      URL.revokeObjectURL(url);
+      resolve(extra || { ok: false });
+    };
+    const bail = setTimeout(() => done({ ok: false }), 15000);
 
     el.preload = "metadata";
     el.muted = true;
     el.playsInline = true;
     el.src = url;
 
-    el.onerror = () => { clearTimeout(bail); done(); };
+    el.onerror = () => done({ ok: false });
     el.onloadedmetadata = () => {
-      const duration = el.duration || 0;
-      if (kind !== "video" || !wantPoster) { clearTimeout(bail); return done({ duration }); }
+      const duration = isFinite(el.duration) ? el.duration : 0;
+      if (kind === "video" && !el.videoWidth && !duration) return done({ ok: false });
+      if (kind !== "video" || !wantPoster) return done({ ok: true, duration });
       el.currentTime = Math.min(duration * 0.1 || 1, 8);
       el.onseeked = () => {
-        clearTimeout(bail);
         try {
           const canvas = document.createElement("canvas");
           const scale = 480 / (el.videoWidth || 480);
           canvas.width = 480;
           canvas.height = Math.round((el.videoHeight || 270) * scale);
           canvas.getContext("2d").drawImage(el, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob(blob => done({ duration, cover: blob || null }), "image/jpeg", 0.8);
-        } catch { done({ duration }); }
+          canvas.toBlob(blob => done({ ok: true, duration, cover: blob || null }), "image/jpeg", 0.8);
+        } catch { done({ ok: true, duration }); }
       };
     };
   });
@@ -433,12 +745,13 @@ function openPlayer(item) {
 
   const art = $("#art");
   if (item.kind === "audio" && item.cover) {
-    const cover = URL.createObjectURL(item.cover);
+    const cover = thumbURL(item.cover);
     $("#art-img").src = cover;
-    art.style.background = `url(${cover}) center/cover`;
+    art.style.background = `url("${cover}") center/cover`;
     art.hidden = false;
   } else {
     art.hidden = true;
+    $("#art-img").removeAttribute("src");
   }
 
   player.hidden = false;
@@ -448,8 +761,88 @@ function openPlayer(item) {
   const seen = state.progress[item.key];
   if (seen && (!item.duration || seen < item.duration - 10)) video.currentTime = seen;
 
+  cueAt = -1;
+  $("#subs").innerHTML = "";
   video.play().then(() => armHide()).catch(() => showChrome());
   mediaSession(item);
+  setTimeout(syncCC, 400);          // native tracks only appear once metadata lands
+}
+
+/* ------------------------------------------------------------ subtitles */
+
+const SUB_MODES = ["off", "Hebrew and meaning", "Hebrew only"];
+let subMode = Math.min(2, Math.max(0, Store.read("subs", 1)));
+let cueAt = -1;
+
+/** Shows or hides the CC pill, and keeps a native track in step with our own. */
+function syncCC() {
+  const item = state.current;
+  const native = [...($("#video").textTracks || [])];
+  const mine = !!(item && item.cues);
+  $("#cc-btn").hidden = !mine && !native.length;
+  $("#cc-btn").classList.toggle("is-on", subMode > 0);
+  $("#subs").classList.toggle("bare", subMode === 2);
+  native.forEach(t => { t.mode = !mine && subMode > 0 ? "showing" : "disabled"; });
+  if (!subMode) { $("#subs").innerHTML = ""; cueAt = -1; }
+  else renderCue(true);
+}
+
+function cycleCC() {
+  subMode = (subMode + 1) % 3;
+  Store.write("subs", subMode);
+  syncCC();
+  toast(subMode ? `Subtitles — ${SUB_MODES[subMode]}` : "Subtitles off");
+  armHide();
+}
+
+function renderCue(force) {
+  const box = $("#subs");
+  const cues = state.current && state.current.cues;
+  if (!cues || !subMode) {
+    if (box.firstChild) { box.innerHTML = ""; cueAt = -1; }
+    return;
+  }
+  const t = $("#video").currentTime;
+
+  let i = cueAt >= 0 && cues[cueAt] && t >= cues[cueAt].a ? cueAt : 0;
+  while (i + 1 < cues.length && cues[i + 1].a <= t) i++;
+  while (i > 0 && cues[i].a > t) i--;
+
+  const cue = cues[i];
+  if (!cue || t < cue.a - 0.08 || t > cue.b + 0.4) {
+    if (cueAt !== -1) { box.innerHTML = ""; cueAt = -1; }
+    return;
+  }
+  if (i !== cueAt || force) { box.innerHTML = cueHTML(cue); cueAt = i; }
+
+  /* light the word being said, and keep it lit until the next one starts —
+     the gaps between words are tiny and a blinking highlight is worse than none */
+  let live = -1;
+  cue.words.forEach((w, n) => { if (w.a <= t + 0.02) live = n; });
+  const spans = box.querySelectorAll(".w");
+  spans.forEach((span, n) => span.classList.toggle("on", n === live));
+}
+
+/** Words right to left, each under its own meaning; an idiom shares one. */
+function cueHTML(cue) {
+  const inside = new Map();
+  cue.groups.forEach((g, gi) => { for (let n = g.from; n <= g.to; n++) inside.set(n, gi); });
+
+  let out = "", open = -1;
+  const shut = () => (open === -1 ? "" : `</span><span class="gl">${esc(cue.groups[open].meaning)}</span></span>`);
+
+  cue.words.forEach((w, n) => {
+    const gi = inside.has(n) ? inside.get(n) : -1;
+    if (gi !== open) {
+      out += shut();
+      if (gi !== -1) out += '<span class="unit"><span class="row">';
+      open = gi;
+    }
+    out += `<span class="w"><span class="he">${esc(w.he)}</span>${
+      gi === -1 && w.gl ? `<span class="gl">${esc(w.gl)}</span>` : ""}</span>`;
+  });
+  out += shut();
+  return `<div class="cue">${out}</div>`;
 }
 
 function closePlayer() {
@@ -460,6 +853,8 @@ function closePlayer() {
   video.load();
   if (url) { URL.revokeObjectURL(url); url = null; }
   $("#player").hidden = true;
+  $("#subs").innerHTML = "";
+  cueAt = -1;
   document.body.style.overflow = "";
   $("#shell").insertBefore($("#today"), $("#tabs"));
   state.current = null;
@@ -495,7 +890,7 @@ function mediaSession(item) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: item.name,
       artist: "Shalosh",
-      artwork: item.cover ? [{ src: URL.createObjectURL(item.cover), sizes: "512x512" }] : [],
+      artwork: item.cover ? [{ src: thumbURL(item.cover), sizes: "512x512" }] : [],
     });
     navigator.mediaSession.setActionHandler("play", () => $("#video").play());
     navigator.mediaSession.setActionHandler("pause", () => $("#video").pause());
@@ -514,19 +909,20 @@ function nudge(seconds) {
 
 function wire() {
   /* tabs */
-  $$(".tab").forEach(tab => tab.addEventListener("click", () => {
-    $$(".tab").forEach(t => { t.classList.toggle("is-on", t === tab); t.setAttribute("aria-selected", t === tab); });
-    state.tab = tab.dataset.tab;
-    moveInk();
-    renderLibrary();
-  }));
+  $$(".tab").forEach(tab => tab.addEventListener("click", () => selectTab(tab.dataset.tab)));
   window.addEventListener("resize", moveInk);
+  window.addEventListener("orientationchange", () => setTimeout(moveInk, 120));
 
   /* files */
   $("#add-btn").addEventListener("click", () => $("#filepick").click());
   $("#filepick").addEventListener("change", event => {
     addFiles(event.target.files);
     event.target.value = "";
+  });
+  $("#imp-done").addEventListener("click", () => Imp.close());
+  $("#storage-btn").addEventListener("click", async () => {
+    await quota();
+    toast($("#imp-quota").textContent || "Storage unknown on this device");
   });
 
   /* sheet */
@@ -543,6 +939,7 @@ function wire() {
   $("#play-btn").addEventListener("click", () => (video.paused ? video.play() : video.pause()));
   $("#back10").addEventListener("click", () => nudge(-10));
   $("#fwd10").addEventListener("click", () => nudge(10));
+  $("#cc-btn").addEventListener("click", cycleCC);
 
   $("#stage").addEventListener("click", event => {
     if (event.target.closest(".chrome") || event.target.closest("#today")) return;
@@ -568,8 +965,11 @@ function wire() {
     if (!dragging) $("#seek").value = Math.round(p * 10);
     $("#t-now").textContent = fmt(video.currentTime);
     $("#t-left").textContent = "-" + fmt(d - video.currentTime);
+    renderCue(false);
     if (Math.floor(video.currentTime) % 5 === 0) saveProgress();
   });
+  video.addEventListener("seeked", () => renderCue(true));
+  video.addEventListener("loadedmetadata", syncCC);
 
   /* scrubbing */
   const seek = $("#seek");
@@ -592,7 +992,7 @@ function wire() {
     end();
   });
 
-  const rates = [1, 1.25, 1.5, 0.75];
+  const rates = [1, 0.85, 0.75, 1.25, 1.5];
   let rateAt = 0;
   $("#rate-btn").addEventListener("click", () => {
     rateAt = (rateAt + 1) % rates.length;
@@ -611,6 +1011,7 @@ function wire() {
     if (event.key === " ") { event.preventDefault(); video.paused ? video.play() : video.pause(); }
     if (event.key === "ArrowLeft") nudge(-10);
     if (event.key === "ArrowRight") nudge(10);
+    if (event.key === "c") cycleCC();
     if (event.key === "Escape") closePlayer();
   });
 
@@ -626,6 +1027,17 @@ function setPlayIcon(playing) {
     ? '<path d="M8 5h3v14H8zM13 5h3v14h-3z"/>'
     : '<path d="M7 4l13 8-13 8z"/>';
   $("#play-btn").setAttribute("aria-label", playing ? "Pause" : "Play");
+}
+
+function selectTab(name) {
+  $$(".tab").forEach(t => {
+    const on = t.dataset.tab === name;
+    t.classList.toggle("is-on", on);
+    t.setAttribute("aria-selected", on);
+  });
+  state.tab = name;
+  moveInk();
+  renderLibrary();
 }
 
 function moveInk() {

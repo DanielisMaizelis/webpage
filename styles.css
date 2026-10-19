@@ -145,33 +145,40 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
 /* prev / next project arrows (project pages only, added by site.js) */
 .nav-steps {
   position: fixed;
-  top: calc(var(--gutter) + 60px); left: 0; right: 0;
+  top: calc(var(--gutter) + 58px); left: 0; right: 0;
   margin: 0 auto;
   width: max-content;
-  display: flex; gap: 6px;
+  display: flex; align-items: center; gap: 6px;
 }
 .nav-step {
-  height: 40px; padding: 0 4px 0 16px;
-  display: inline-flex; align-items: center; gap: 10px;
+  height: 48px; padding: 0 5px 0 20px;
+  display: inline-flex; align-items: center; gap: 16px;
   border-radius: 999px;
-  background: rgba(243, 240, 234, 0.72);
+  background: rgba(14, 13, 12, 0.86);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--line);
-  font-size: 13px; font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  color: var(--on-dark);
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
-.nav-step.go-prev { padding: 0 4px; }
+.nav-step .txt { display: flex; flex-direction: column; line-height: 1.15; }
+.nav-step small { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.55; }
+.nav-step b { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
 .nav-step .arr {
-  width: 30px; height: 30px;
+  width: 38px; height: 38px;
   display: grid; place-items: center;
   border-radius: 50%;
-  background: var(--ink); color: var(--on-dark);
-  transition: transform 0.4s var(--ease);
+  background: var(--accent); color: #fff;
+  transition: transform 0.5s var(--ease), background 0.3s;
 }
+.nav-step.go-prev { width: 48px; padding: 0; justify-content: center; }
+.nav-step.go-prev .arr { background: rgba(243, 240, 234, 0.12); }
+.nav-step:active .arr { transform: scale(0.9); }
 @media (hover: hover) {
-  .nav-step.go-next:hover .arr { transform: translateX(3px); }
-  .nav-step.go-prev:hover .arr { transform: translateX(-3px); }
+  .nav-step.go-next:hover .arr { transform: translateX(4px); }
+  .nav-step.go-prev:hover .arr { transform: translateX(-4px); background: rgba(243, 240, 234, 0.22); }
 }
 
 /* ---------- hero / intro video ---------- */
@@ -1002,15 +1009,8 @@ kbd {
   }
   .foot { padding-bottom: 90px; }
   /* arrows sit just above the bottom tab bar */
-  .nav-steps { top: auto; bottom: 74px; }
-  .has-steps .foot { padding-bottom: 140px; }
-  .nav-step {
-    background: rgba(14, 13, 12, 0.82);
-    border-color: rgba(255, 255, 255, 0.12);
-    color: var(--on-dark);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  }
-  .nav-step .arr { background: var(--on-dark); color: var(--ink); }
+  .nav-steps { top: auto; bottom: 76px; }
+  .has-steps .foot { padding-bottom: 150px; }
   .nav-cta .long { display: none; }
   .nav-cta { padding: 0 8px 0 16px; }
   .nav-cta .short { display: inline; }
@@ -1037,6 +1037,14 @@ kbd {
   .nav-actions { gap: 6px; }
   .nav-cta { padding: 0 5px 0 13px; gap: 8px; }
   .nav-cta .dot { width: 28px; height: 28px; }
+}
+/* very narrow phones (iPhone with Display Zoom is 320px): drop the circles so CV never falls off the edge */
+@media (max-width: 420px) {
+  .nav { gap: 6px; }
+  .nav-brand { height: 40px; padding: 0 12px; font-size: 14px; flex-shrink: 1; min-width: 0; overflow: hidden; }
+  .nav-actions { flex-shrink: 0; }
+  .nav-cta { height: 40px; padding: 0 12px; gap: 4px; font-size: 13px; }
+  .nav-cta .dot { width: 14px; height: 14px; background: none; }
   .hero-frame { padding: 96px 20px 20px; }
   .hero-bottom p { font-size: 14px; }
   .round-btn { width: 52px; height: 52px; }

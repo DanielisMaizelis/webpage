@@ -45,6 +45,7 @@ if (finePointer) {
 }
 
 // ---------- project pages: prev / next arrows, in menu order ----------
+const SLIDE = 0.6;   // share of the viewport width a page travels when sliding in or out
 const SEQ = ["rl-forest.html", "danieltube.html", "class-ab-amp.html", "gta-radio.html", "water-tracker.html", "other-projects.html"];
 const pageOf = href => new URL(href, location.href).pathname.split("/").pop() || "index.html";
 const hereIdx = SEQ.indexOf(pageOf(location.href));
@@ -63,9 +64,11 @@ if (hereIdx !== -1 && pill) {
   const next = SEQ[(hereIdx + 1) % SEQ.length];
   const steps = document.createElement("div");
   steps.className = "nav-steps";
+  const arrow = d => `<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   steps.innerHTML =
-    `<a class="nav-step go-prev" href="${prev}" data-dir="prev" aria-label="Previous project: ${names[prev]}"><span class="arr">←</span></a>` +
-    `<a class="nav-step go-next" href="${next}" data-dir="next" aria-label="Next project: ${names[next]}">Next project<span class="arr">→</span></a>`;
+    `<a class="nav-step go-prev" href="${prev}" data-dir="prev" aria-label="Previous project: ${names[prev]}"><span class="arr">${arrow("M19 12H5m6-6-6 6 6 6")}</span></a>` +
+    `<a class="nav-step go-next" href="${next}" data-dir="next" aria-label="Next project: ${names[next]}">` +
+      `<span class="txt"><small>Next project</small><b>${names[next]}</b></span><span class="arr">${arrow("M5 12h14m-6-6 6 6-6 6")}</span></a>`;
   document.querySelector(".nav").appendChild(steps);
   document.body.classList.add("has-steps");
 }
@@ -141,10 +144,24 @@ function startIntro() {
   // Came in from a neighbouring project: the page slides in from the side it lives on
   if (navMode === "slide-next" || navMode === "slide-prev") {
     if (heroVideo) gsap.set(heroVideo, { scale: 1 });
-    const from = (navMode === "slide-next" ? 1 : -1) * window.innerWidth * 0.35;
-    gsap.fromTo("main", { x: from, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: "expo.out", clearProps: "transform,opacity" });
-    gsap.from(".hero-title .line > span", { yPercent: 110, duration: 1.1, stagger: 0.08, ease: "expo.out", delay: 0.15 });
+    const dir = navMode === "slide-next" ? 1 : -1;
+    gsap.set("main", { x: dir * window.innerWidth * SLIDE, scale: 0.94, opacity: 0, transformOrigin: "50% 0" });
+    gsap.set(".hero-title .line > span", { yPercent: 110 });
     root.classList.remove("from-slide");
+    let started = false;
+    const go = () => {
+      if (started) return;
+      started = true;
+      gsap.timeline()
+        .to("main", { x: 0, duration: 1.1, ease: "power4.out" }, 0)
+        .to("main", { opacity: 1, duration: 0.5, ease: "power1.out" }, 0)
+        .to("main", { scale: 1, duration: 0.9, ease: "power3.inOut", clearProps: "transform,opacity" }, 0.15)
+        .to(".hero-title .line > span", { yPercent: 0, duration: 1.1, stagger: 0.08, ease: "expo.out" }, 0.45);
+    };
+    if (heroVideo && heroVideo.readyState < 2) {
+      heroVideo.addEventListener("loadeddata", go, { once: true });
+      setTimeout(go, 700);
+    } else go();
     return;
   }
   // Skip the reveal if we landed mid-page (e.g. other-projects.html#robocar)
@@ -411,13 +428,11 @@ function slideTo(href, dir) {
   if (sliding) return;
   sliding = true;
   try { sessionStorage.setItem("v2-nav", "slide-" + dir); } catch (e) {}
-  gsap.to("main", {
-    x: (dir === "next" ? -1 : 1) * window.innerWidth * 0.35,
-    opacity: 0,
-    duration: 0.45,
-    ease: "power2.in",
-    onComplete: () => { location.href = href; }
-  });
+  gsap.timeline({ onComplete: () => { location.href = href; } })
+    .set("main", { transformOrigin: "50% " + window.scrollY + "px" })
+    .to("main", { x: (dir === "next" ? -1 : 1) * window.innerWidth * SLIDE, duration: 0.6, ease: "power3.in" }, 0)
+    .to("main", { scale: 0.94, duration: 0.6, ease: "power2.inOut" }, 0)
+    .to("main", { opacity: 0, duration: 0.3, ease: "power1.in" }, 0.3);
 }
 
 // Featured project: the card's own (already playing) video lifts out of the grid
