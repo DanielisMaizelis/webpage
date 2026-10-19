@@ -71,10 +71,12 @@ if (hereIdx !== -1 && pill) {
   const steps = document.createElement("div");
   steps.className = "nav-steps";
   const arrow = d => `<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const label = (long, short) => `<small><span class="lg">${long}</span><span class="sm">${short}</span></small>`;
   steps.innerHTML =
-    `<a class="nav-step go-prev" href="${prev}" data-dir="prev" aria-label="Previous project: ${names[prev]}"><span class="arr">${arrow("M19 12H5m6-6-6 6 6 6")}</span></a>` +
+    `<a class="nav-step go-prev" href="${prev}" data-dir="prev" aria-label="Previous project: ${names[prev]}">` +
+      `<span class="arr">${arrow("M19 12H5m6-6-6 6 6 6")}</span><span class="txt">${label("Previous project", "Prev")}<b>${names[prev]}</b></span></a>` +
     `<a class="nav-step go-next" href="${next}" data-dir="next" aria-label="Next project: ${names[next]}">` +
-      `<span class="txt"><small>Next project</small><b>${names[next]}</b></span><span class="arr">${arrow("M5 12h14m-6-6 6 6-6 6")}</span></a>`;
+      `<span class="txt">${label("Next project", "Next")}<b>${names[next]}</b></span><span class="arr">${arrow("M5 12h14m-6-6 6 6-6 6")}</span></a>`;
   document.querySelector(".nav").appendChild(steps);
   document.body.classList.add("has-steps");
 }

@@ -173,12 +173,21 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
   background: var(--accent); color: #fff;
   transition: transform 0.5s var(--ease), background 0.3s;
 }
-.nav-step.go-prev { width: 48px; padding: 0; justify-content: center; }
-.nav-step.go-prev .arr { background: rgba(243, 240, 234, 0.12); }
+.nav-step.go-prev { padding: 0 20px 0 5px; }
+.nav-step.go-prev .txt { align-items: flex-start; }
+.nav-step .sm { display: none; }
+/* both arrows nudge the way they point, every few seconds */
+.nav-step .arr svg { animation: nudge-next 2.8s var(--ease) infinite; }
+.nav-step.go-prev .arr svg { animation-name: nudge-prev; animation-delay: 1.4s; }
+@keyframes nudge-next { 0%, 70%, 100% { transform: none; } 80% { transform: translateX(4px); } 90% { transform: translateX(-1px); } }
+@keyframes nudge-prev { 0%, 70%, 100% { transform: none; } 80% { transform: translateX(-4px); } 90% { transform: translateX(1px); } }
 .nav-step:active .arr { transform: scale(0.9); }
 @media (hover: hover) {
   .nav-step.go-next:hover .arr { transform: translateX(4px); }
-  .nav-step.go-prev:hover .arr { transform: translateX(-4px); background: rgba(243, 240, 234, 0.22); }
+  .nav-step.go-prev:hover .arr { transform: translateX(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-step .arr svg { animation: none; }
 }
 
 /* ---------- hero / intro video ---------- */
@@ -1046,6 +1055,13 @@ kbd {
   .nav-actions { flex-shrink: 0; }
   .nav-cta { height: 40px; padding: 0 12px; gap: 4px; font-size: 13px; }
   .nav-cta .dot { width: 14px; height: 14px; background: none; }
+  /* both project buttons side by side: shorter labels */
+  .nav-step { height: 44px; gap: 10px; padding: 0 4px 0 14px; }
+  .nav-step.go-prev { padding: 0 14px 0 4px; }
+  .nav-step .arr { width: 34px; height: 34px; }
+  .nav-step b { font-size: 13px; }
+  .nav-step .lg { display: none; }
+  .nav-step .sm { display: inline; }
 }
 
 @media (prefers-reduced-motion: reduce) {
