@@ -605,8 +605,19 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
   font-size: 13px;
   color: var(--ink-soft);
 }
+/* tiny tap target next to "Built in Linux" → Shalosh */
+.egg {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 10px 8px;
+  margin-block: -10px;
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.35;
+}
 @media (hover: hover) {
   .to-top:hover { color: var(--ink); }
+  .egg:hover { opacity: 1; color: var(--accent); }
 }
 
 /* ---------- cursor ----------
