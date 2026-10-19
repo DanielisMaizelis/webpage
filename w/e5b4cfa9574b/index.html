@@ -146,11 +146,38 @@
       </div>
     </div>
 
-    <!-- VLC-style heads-up display for the swipe gestures -->
+    <!-- VLC: a vertical bar on the edge you are swiping -->
+    <div class="vbar left" id="vb-bright" hidden aria-hidden="true">
+      <span class="vb-val" id="vb-bright-val">100%</span>
+      <span class="vb-track"><i id="vb-bright-fill"></i></span>
+      <span class="vb-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>
+      </span>
+    </div>
+    <div class="vbar right" id="vb-vol" hidden aria-hidden="true">
+      <span class="vb-val" id="vb-vol-val">100%</span>
+      <span class="vb-track"><i id="vb-vol-fill"></i></span>
+      <span class="vb-icon" id="vb-vol-icon">
+        <svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 3V7L8 10H5z"/><path d="M16 9.5a3.5 3.5 0 010 5M18.5 7a7 7 0 010 10"/></svg>
+      </span>
+    </div>
+
+    <!-- scrubbing sideways gets a centred readout, like VLC -->
     <div class="hud" id="hud" hidden>
-      <span class="hud-icon" id="hud-icon" aria-hidden="true"></span>
-      <span class="hud-bar"><i id="hud-fill"></i></span>
       <span class="hud-val" id="hud-val"></span>
+      <span class="hud-at" id="hud-at"></span>
+    </div>
+
+    <!-- double tap: the YouTube/Netflix half-circle ripple -->
+    <div class="ripple" id="ripple" hidden aria-hidden="true">
+      <span class="ripple-core" id="ripple-core">
+        <span class="chev">
+          <svg viewBox="0 0 24 24"><path d="M13 5l-7 7 7 7"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M13 5l-7 7 7 7"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M13 5l-7 7 7 7"/></svg>
+        </span>
+        <span class="ripple-text" id="ripple-text">10 seconds</span>
+      </span>
     </div>
 
     <button class="unlock" id="unlock-btn" type="button" hidden>
@@ -168,6 +195,10 @@
     <h2 id="panel-title">Subtitles</h2>
     <p class="panel-note" id="panel-note" hidden></p>
     <ul class="panel-list" id="panel-list"></ul>
+    <div class="speed-rail" id="speed-rail" hidden>
+      <div class="rail"><span class="rail-fill" id="rail-fill"></span></div>
+      <div class="rail-stops" id="rail-stops"></div>
+    </div>
     <button class="ghost-btn panel-close" id="panel-close" type="button">Close</button>
   </section>
 </div>

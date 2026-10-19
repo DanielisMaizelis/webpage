@@ -730,6 +730,7 @@ async function forget(item) {
 let url = null;
 let hideTimer = null;
 let lastTap = 0;
+let lastSide = 0;
 
 function openPlayer(item) {
   state.current = item;
@@ -844,21 +845,66 @@ function setLocked(on) {
 
 /* ------------------------------------------------------- the readout */
 
+/* VLC shows a vertical bar on the edge you are actually touching —
+   brightness on the left, volume on the right. */
+let vbarTimer;
+function vbar(kind) {
+  const isBright = kind === "bright";
+  const el = $(isBright ? "#vb-bright" : "#vb-vol");
+  const other = $(isBright ? "#vb-vol" : "#vb-bright");
+  const value = isBright ? (bright - 0.2) / 1.6 : volume / 1.5;
+  const shown = Math.round((isBright ? bright : volume) * 100);
+
+  $(isBright ? "#vb-bright-fill" : "#vb-vol-fill").style.height = (clamp(value, 0, 1) * 100).toFixed(1) + "%";
+  $(isBright ? "#vb-bright-val" : "#vb-vol-val").textContent = shown + "%";
+  if (!isBright) $("#vb-vol-icon").innerHTML = GLYPH[volume <= 0 ? "mute" : "volume"];
+  other.hidden = true;
+  el.hidden = false;
+  clearTimeout(vbarTimer);
+  vbarTimer = setTimeout(() => { el.hidden = true; }, 900);
+}
+
 const GLYPH = {
   bright: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>',
   volume: '<svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 3V7L8 10H5z"/><path d="M16 9.5a3.5 3.5 0 010 5M18.5 7a7 7 0 010 10"/></svg>',
   mute:   '<svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 3V7L8 10H5z"/><path d="M16 10l4 4M20 10l-4 4"/></svg>',
-  seek:   '<svg viewBox="0 0 24 24"><path d="M4 12h14M13 7l5 5-5 5"/></svg>',
 };
 
+/* a centred readout for scrubbing sideways */
 let hudTimer;
-function hud(kind, fraction, label) {
-  $("#hud-icon").innerHTML = GLYPH[kind === "volume" && fraction <= 0 ? "mute" : kind];
-  $("#hud-fill").style.width = (clamp(fraction, 0, 1) * 100).toFixed(0) + "%";
-  $("#hud-val").textContent = label;
+function hud(delta, target) {
+  $("#hud-val").textContent = (delta >= 0 ? "+" : "−") + fmt(Math.abs(delta));
+  $("#hud-at").textContent = fmt(target) + " / " + fmt($("#video").duration || 0);
   $("#hud").hidden = false;
   clearTimeout(hudTimer);
-  hudTimer = setTimeout(() => ($("#hud").hidden = true), 850);
+  hudTimer = setTimeout(() => ($("#hud").hidden = true), 700);
+}
+
+/* The YouTube/Netflix double tap: a half-circle washes out from the edge
+   and repeated taps add up — +10, +20, +30 — clearing 600ms after the last. */
+let rippleSide = null, rippleTotal = 0, rippleTimer;
+
+function ripple(side) {
+  const el = $("#ripple");
+  if (side !== rippleSide) rippleTotal = 0;
+  rippleSide = side;
+  rippleTotal += 10;
+
+  el.classList.toggle("left", side < 0);
+  el.classList.toggle("right", side > 0);
+  $("#ripple-text").textContent = `${rippleTotal} seconds`;
+
+  el.hidden = true;                      // restart the animation from the top
+  void el.offsetWidth;
+  el.hidden = false;
+
+  clearTimeout(rippleTimer);
+  rippleTimer = setTimeout(() => {
+    el.hidden = true;
+    rippleSide = null;
+    rippleTotal = 0;
+  }, 620);
+  return rippleTotal;
 }
 
 /* ------------------------------------------------- the slider drawer */
@@ -911,6 +957,7 @@ function openPanel(title, note, rows) {
     li.appendChild(b);
     list.appendChild(li);
   });
+  $("#speed-rail").hidden = true;
   $("#panel-wrap").hidden = false;
   resumeAfterPanel = !$("#video").paused;
   if (resumeAfterPanel) $("#video").pause();
@@ -919,6 +966,7 @@ function openPanel(title, note, rows) {
 let resumeAfterPanel = false;
 function closePanel() {
   $("#panel-wrap").hidden = true;
+  $("#speed-rail").hidden = true;
   if (resumeAfterPanel) $("#video").play().catch(() => {});
   resumeAfterPanel = false;
   armHide();
@@ -940,19 +988,40 @@ function subtitlePanel() {
   openPanel("Subtitles", note, rows);
 }
 
-const RATES = [0.5, 0.75, 0.85, 1, 1.25, 1.5, 2];
+/* the five stops Netflix ships, capped at 1.5x, Normal in the middle */
+const RATES = [0.5, 0.75, 1, 1.25, 1.5];
+
 function speedPanel() {
-  openPanel("Playback speed", null, RATES.map(r => ({
-    label: r === 1 ? "Normal (1×)" : r + "×",
-    on: Math.abs(rate - r) < 0.001,
-    pick: () => {
+  openPanel("Playback speed", "Pitch stays corrected, so voices do not turn into chipmunks.", []);
+  $("#speed-rail").hidden = false;
+  drawRail();
+}
+
+function drawRail() {
+  const stops = $("#rail-stops");
+  stops.innerHTML = "";
+  const at = RATES.findIndex(r => Math.abs(rate - r) < 0.001);
+  $("#rail-fill").style.width = (at / (RATES.length - 1)) * 100 + "%";
+
+  RATES.forEach((r, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = i === at ? "on" : i < at ? "done" : "";
+    b.innerHTML = `<i></i><span>${r === 1 ? "Normal" : r + "×"}</span>`;
+    b.addEventListener("click", () => {
       rate = r;
       Store.write("rate", r);
-      $("#video").playbackRate = r;
+      const video = $("#video");
+      video.playbackRate = r;
+      video.preservesPitch = true;
+      video.mozPreservesPitch = true;
+      video.webkitPreservesPitch = true;
       $("#speed-btn").classList.toggle("is-on", r !== 1);
-      toast(r === 1 ? "Normal speed" : `Speed ${r}×`);
-    },
-  })));
+      drawRail();
+      setTimeout(closePanel, 260);
+    });
+    stops.appendChild(b);
+  });
 }
 
 /* --------------------------------------------------------- full screen */
@@ -989,7 +1058,8 @@ function syncCC() {
   const item = state.current;
   const native = [...($("#video").textTracks || [])];
   const mine = !!(item && item.cues);
-  $("#subs-btn").disabled = !mine && !native.length;
+  // never disabled: a button that does nothing reads as broken, so it
+  // always opens and explains itself instead
   $("#subs-btn").classList.toggle("is-on", subMode > 0 && (mine || native.length));
   $("#subs").classList.toggle("bare", subMode === 2);
   native.forEach(t => { t.mode = !mine && subMode > 0 ? "showing" : "disabled"; });
@@ -1149,8 +1219,8 @@ function wire() {
   const video = $("#video");
   $("#back-btn").addEventListener("click", closePlayer);
   $("#play-btn").addEventListener("click", () => (video.paused ? video.play() : video.pause()));
-  $("#back10").addEventListener("click", () => nudge(-10));
-  $("#fwd10").addEventListener("click", () => nudge(10));
+  $("#back10").addEventListener("click", () => { ripple(-1); nudge(-10); });
+  $("#fwd10").addEventListener("click", () => { ripple(1); nudge(10); });
   $("#full-btn").addEventListener("click", toggleFullscreen);
   $("#lock-btn").addEventListener("click", () => {
     setLocked(true);
@@ -1208,19 +1278,17 @@ function wire() {
       if (g.right) {
         volume = clamp(g.volume0 + step * 1.5, 0, 1.5);
         applyVolume();
-        hud("volume", volume / 1.5, Math.round(volume * 100) + "%");
+        vbar("volume");
       } else {
         bright = clamp(g.bright0 + step * 1.6, 0.2, 1.8);
         applyBright();
-        hud("bright", (bright - 0.2) / 1.6, Math.round(bright * 100) + "%");
+        vbar("bright");
       }
     } else {
       const span = Math.max(200, stage.clientWidth);
       g.seek = clamp(g.time0 + (dx / span) * Math.min(video.duration || 0, 180),
                      0, video.duration || 0);
-      const delta = Math.round(g.seek - g.time0);
-      hud("seek", video.duration ? g.seek / video.duration : 0,
-          (delta >= 0 ? "+" : "−") + fmt(Math.abs(delta)));
+      hud(Math.round(g.seek - g.time0), g.seek);
     }
   });
 
@@ -1244,14 +1312,15 @@ function wire() {
     if (locked) { showChrome(); armHide(); return; }
 
     const now = Date.now();
-    if (now - lastTap < 300) {                       // double tap: skip
-      const side = event.clientX < stage.clientWidth / 2 ? -10 : 10;
-      nudge(side);
-      hud("seek", video.duration ? video.currentTime / video.duration : 0,
-          (side < 0 ? "−" : "+") + "10s");
-      lastTap = 0;
+    const side = event.clientX < stage.clientWidth / 2 ? -1 : 1;
+    // 650ms, the window the double-tap players settle on
+    if (now - lastTap < 650 && side === lastSide) {
+      ripple(side);
+      nudge(side * 10);
+      lastTap = now;
       return;
     }
+    lastSide = side;
     closeSlider();
     $("#player").classList.contains("ui-off") ? armHide() : $("#player").classList.add("ui-off");
     lastTap = now;
@@ -1316,8 +1385,8 @@ function wire() {
     if (event.key === "ArrowRight") nudge(10);
     if (event.key === "c") cycleCC();
     if (event.key === "f") toggleFullscreen();
-    if (event.key === "ArrowUp") { volume = clamp(volume + 0.1, 0, 1.5); applyVolume(); hud("volume", volume / 1.5, Math.round(volume * 100) + "%"); }
-    if (event.key === "ArrowDown") { volume = clamp(volume - 0.1, 0, 1.5); applyVolume(); hud("volume", volume / 1.5, Math.round(volume * 100) + "%"); }
+    if (event.key === "ArrowUp") { volume = clamp(volume + 0.1, 0, 1.5); applyVolume(); vbar("volume"); }
+    if (event.key === "ArrowDown") { volume = clamp(volume - 0.1, 0, 1.5); applyVolume(); vbar("volume"); }
     if (event.key === "Escape") closePlayer();
   });
 
