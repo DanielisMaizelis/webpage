@@ -517,6 +517,11 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 }
 .player.ui-off .chrome, .player.locked .chrome { opacity: 0; pointer-events: none; }
 
+/* the chrome covers the whole stage, so it must be transparent to touch —
+   only the controls themselves take it, or no swipe ever reaches the video */
+.chrome, .chrome > * { pointer-events: none; }
+.chrome .ctl, .chrome .action, .chrome .scrub, .chrome .slider-row { pointer-events: auto; }
+
 /* every round control is the same object at three sizes */
 .ctl {
   flex: none;
@@ -986,13 +991,13 @@ svg.solid { fill: currentColor; stroke: none; }
   z-index: 2;
   left: calc(var(--left) + 14px);
   right: calc(var(--right) + 14px);
-  bottom: calc(var(--bottom) + 104px);
+  bottom: calc(var(--bottom) + 162px);   /* clears the scrubber and the action row */
   display: flex;
   justify-content: center;
   pointer-events: none;
   transition: bottom 0.4s var(--ease), opacity 0.3s var(--ease);
 }
-.player.ui-off .subs { bottom: calc(var(--bottom) + 26px); }
+.player.ui-off .subs, .player.locked .subs { bottom: calc(var(--bottom) + 26px); }
 .subs:empty { opacity: 0; }
 
 .cue {
@@ -1052,7 +1057,7 @@ svg.solid { fill: currentColor; stroke: none; }
 .subs.bare .unit { background: none; }
 
 @media (orientation: landscape) {
-  .subs { bottom: calc(var(--bottom) + 92px); }
+  .subs { bottom: calc(var(--bottom) + 150px); }
   .cue .he { font-size: clamp(18px, 3.2vh, 26px); }
   .cue .gl { font-size: clamp(9px, 1.7vh, 11.5px); }
 }

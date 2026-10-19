@@ -1,5 +1,5 @@
 /* Shalosh offline shell. The media never comes near here — it lives in IndexedDB. */
-const CACHE = "shalosh-v3";
+const CACHE = "shalosh-v4";
 const SHELL = ["./", "index.html", "app.css", "app.js", "manifest.webmanifest",
                "icon-180.png", "icon-192.png", "icon-512.png"];
 
