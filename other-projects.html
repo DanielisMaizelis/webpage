@@ -16,7 +16,11 @@
 <script>
   // "expand" when a project card grew into this page's hero on the previous page
   try { window.__v2nav = sessionStorage.getItem("v2-nav"); sessionStorage.removeItem("v2-nav"); } catch (e) {}
-  if (window.__v2nav !== "expand") {
+  if (window.__v2nav === "slide-next" || window.__v2nav === "slide-prev") {
+    // came from the neighbouring project via the nav: the page slides in sideways
+    document.documentElement.classList.add("from-slide");
+    setTimeout(function () { document.documentElement.classList.remove("from-slide"); }, 3000);
+  } else if (window.__v2nav !== "expand") {
     document.documentElement.classList.add("intro-pending");
     setTimeout(function () { document.documentElement.classList.remove("intro-pending"); }, 3000);
   }

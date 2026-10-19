@@ -121,6 +121,41 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .ghost-btn:active { border-color: var(--line-2); color: var(--paper); }
 .ghost-btn.danger { color: var(--accent); border-color: transparent; }
 
+/* ============================== tabs ============================== */
+/* at the very top, spanning the width — not a pill tucked in a corner */
+
+.tabs {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  margin: 0 0 24px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+}
+.tab {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  padding: 10px 8px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--soft);
+  transition: color 0.3s var(--ease);
+}
+.tab.is-on { color: var(--bg); }
+.tab-ink {
+  position: absolute;
+  z-index: 0;
+  top: 4px;
+  height: calc(100% - 8px);
+  border-radius: 999px;
+  background: var(--paper);
+  transition: transform 0.45s var(--ease), width 0.45s var(--ease);
+}
+
 /* ============================== today ============================= */
 
 .today-head {
@@ -218,40 +253,6 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
   animation: rule 0.7s var(--ease) forwards;
 }
 @keyframes rule { to { transform: scaleX(1); } }
-
-/* ============================== tabs ============================== */
-
-.tabs {
-  position: relative;
-  display: flex;
-  gap: 4px;
-  margin: 28px 0 16px;
-  padding: 4px;
-  border-radius: 999px;
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  width: fit-content;
-}
-.tab {
-  position: relative;
-  z-index: 1;
-  padding: 9px 18px;
-  border-radius: 999px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--soft);
-  transition: color 0.3s var(--ease);
-}
-.tab.is-on { color: var(--bg); }
-.tab-ink {
-  position: absolute;
-  z-index: 0;
-  top: 4px;
-  height: calc(100% - 8px);
-  border-radius: 999px;
-  background: var(--paper);
-  transition: transform 0.45s var(--ease), width 0.45s var(--ease);
-}
 
 /* ============================= library ============================ */
 
@@ -449,9 +450,9 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .player #today {
   position: absolute;
   z-index: 3;
-  top: calc(var(--top) + 10px);
-  left: calc(var(--left) + 12px);
-  right: calc(var(--right) + 12px);
+  top: calc(var(--top) + 8px);
+  left: calc(var(--left) + 10px);
+  right: calc(var(--right) + 10px);
 }
 .player .today-head { display: none; }
 .player .slots { grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -592,25 +593,42 @@ svg.solid { fill: currentColor; stroke: none; }
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
-.rate {
+.pills { display: flex; gap: 8px; }
+.pill {
   padding: 5px 12px;
   border-radius: 999px;
   border: 1px solid var(--line);
   font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   color: var(--soft);
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease),
+              background 0.3s var(--ease);
 }
+.pill:active { transform: scale(0.94); }
+.pill.is-on { color: var(--bg); background: var(--paper); border-color: var(--paper); }
+.pill[hidden] { display: none !important; }
 
 /* landscape: give the picture everything, keep the words */
 @media (orientation: landscape) {
-  /* there's width to spare, so the words hug their own text instead of
-     stretching into three empty thirds across the screen */
-  .player .slots { display: flex; flex-wrap: wrap; }
-  .player .slot { flex: 0 1 auto; max-width: 32%; min-width: 52px; }
+  /* the three ride the full width of the picture, right at the top edge */
+  .player #today { top: calc(var(--top) + 6px); }
+  .player .slots { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .player .slot { padding: 7px 14px; min-height: 40px; }
+  .player .slot .he { font-size: 18px; }
+  .player .slot .en { font-size: 11.5px; }
+  /* with the strip across the top, the back button tucks under it */
+  .chrome { padding-top: calc(var(--top) + 62px); }
+  .play-btn { width: 64px; height: 64px; }
+  .chrome-top { align-items: center; }
+  .now { padding-top: 0; }
 }
-@media (orientation: landscape) and (max-height: 520px) {
-  .chrome { padding-top: calc(var(--top) + 58px); }
-  .play-btn { width: 62px; height: 62px; }
-  .player .slot .he { font-size: 17px; }
+@media (orientation: landscape) and (max-height: 420px) {
+  .player .slot { min-height: 34px; padding: 5px 12px; }
+  .player .slot .he { font-size: 16px; }
+  .chrome { padding-top: calc(var(--top) + 52px); }
+  .play-btn { width: 56px; height: 56px; }
+  .icon-btn.big { width: 48px; height: 48px; }
 }
 
 /* ============================== sheet ============================= */

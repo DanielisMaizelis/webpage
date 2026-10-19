@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="GTA Radio — a car radio PCB and firmware project by Danielis Maizelis (ongoing).">
+  <meta name="description" content="GTA PCB Radio — an FM radio on a custom STM32 board, PCB and firmware by Danielis Maizelis (ongoing).">
   <meta name="theme-color" content="#0e0d0c">
   <title>GTA Radio — Danielis Maizelis</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,11 @@
 <script>
   // "expand" when a project card grew into this page's hero on the previous page
   try { window.__v2nav = sessionStorage.getItem("v2-nav"); sessionStorage.removeItem("v2-nav"); } catch (e) {}
-  if (window.__v2nav !== "expand") {
+  if (window.__v2nav === "slide-next" || window.__v2nav === "slide-prev") {
+    // came from the neighbouring project via the nav: the page slides in sideways
+    document.documentElement.classList.add("from-slide");
+    setTimeout(function () { document.documentElement.classList.remove("from-slide"); }, 3000);
+  } else if (window.__v2nav !== "expand") {
     document.documentElement.classList.add("intro-pending");
     setTimeout(function () { document.documentElement.classList.remove("intro-pending"); }, 3000);
   }
@@ -58,7 +62,10 @@
 <main>
 
   <section class="hero case" id="top">
-    <div class="hero-frame" id="hero-frame" data-intro="GTA Radio">
+    <div class="hero-frame" id="hero-frame" data-intro="GTA PCB Radio">
+      <video class="hero-video" autoplay muted loop playsinline preload="auto">
+        <source src="media/gta-radio-web.mp4" type="video/mp4">
+      </video>
       <div class="hero-shade"></div>
 
       <div class="hero-top">
@@ -72,9 +79,55 @@
       </h1>
 
       <div class="hero-bottom">
-        <p></p>
+        <p>A fun little FM radio on a custom STM32 board. Tune it with the buttons and read the station off the display.</p>
       </div>
     </div>
+  </section>
+
+  <div class="facts">
+    <div class="fact reveal"><span class="label">Status</span><strong>Ongoing · rev 2 on the bench</strong></div>
+    <div class="fact reveal"><span class="label">Brain</span><strong>STM32</strong></div>
+    <div class="fact reveal"><span class="label">Power</span><strong>12 V → 5 V → 3.3 V</strong></div>
+    <div class="fact reveal"><span class="label">Radio</span><strong>FM, tuned on the board</strong></div>
+  </div>
+
+  <section class="case" id="story">
+    <div class="section-head">
+      <span class="label">(01) Why</span>
+    </div>
+    <p class="statement reveal-words">
+      Just a fun little project: a car-style radio built from scratch. Press a button, the station changes and the <em>frequency lights up on the display.</em>
+    </p>
+  </section>
+
+  <section class="case">
+    <div class="split">
+      <div class="split-media tall contain reveal">
+        <video muted loop playsinline preload="metadata"><source src="media/gta-radio-web.mp4" type="video/mp4"></video>
+        <span class="chip on-media">On the bench</span>
+      </div>
+      <div class="split-text reveal">
+        <span class="label">01 — Two boards</span>
+        <h3>One done, one in progress.</h3>
+        <p>The video shows two PCBs. The first board is finished: press a button and the display steps through the FM band, 88.1, 88.7 and on.</p>
+        <p>The second board, in the holder, is the one I'm building now, with the fixes from the first revision. The FM radio is still being placed, then it gets tuned and adjusted.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="case">
+    <div class="section-head">
+      <span class="label">(02) On the board</span>
+      <h2 class="section-title">Small board, <em>whole radio.</em></h2>
+    </div>
+    <ol class="steps">
+      <li class="step reveal"><span class="num">01</span><h4>12 V in</h4><p>A switch-mode supply (SMPS) steps 12 V down to 5 V efficiently.</p></li>
+      <li class="step reveal"><span class="num">02</span><h4>3.3 V</h4><p>A voltage regulator takes the 5 V rail down to a clean 3.3 V for the microcontroller.</p></li>
+      <li class="step reveal"><span class="num">03</span><h4>STM32</h4><p>Runs the firmware: reads the buttons, drives the display and controls the radio.</p></li>
+      <li class="step reveal"><span class="num">04</span><h4>FM radio</h4><p>An adjustable FM receiver. Being placed and tuned on the new board.</p></li>
+      <li class="step reveal"><span class="num">05</span><h4>Display</h4><p>A 7-segment readout that shows which FM station you're on.</p></li>
+      <li class="step reveal"><span class="num">06</span><h4>SD card</h4><p>An SD card slot on the board.</p></li>
+    </ol>
   </section>
 
   <section class="contact" id="contact">

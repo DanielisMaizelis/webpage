@@ -142,6 +142,38 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
 .nav-cta-alt .dot { background: rgba(243, 240, 234, 0.16); }
 .nav-cta .short { display: none; }
 
+/* prev / next project arrows (project pages only, added by site.js) */
+.nav-steps {
+  position: fixed;
+  top: calc(var(--gutter) + 60px); left: 0; right: 0;
+  margin: 0 auto;
+  width: max-content;
+  display: flex; gap: 6px;
+}
+.nav-step {
+  height: 40px; padding: 0 4px 0 16px;
+  display: inline-flex; align-items: center; gap: 10px;
+  border-radius: 999px;
+  background: rgba(243, 240, 234, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  font-size: 13px; font-weight: 500;
+  white-space: nowrap;
+}
+.nav-step.go-prev { padding: 0 4px; }
+.nav-step .arr {
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--ink); color: var(--on-dark);
+  transition: transform 0.4s var(--ease);
+}
+@media (hover: hover) {
+  .nav-step.go-next:hover .arr { transform: translateX(3px); }
+  .nav-step.go-prev:hover .arr { transform: translateX(-3px); }
+}
+
 /* ---------- hero / intro video ---------- */
 .hero {
   height: 100vh;
@@ -264,12 +296,10 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
   font-weight: 500;
 }
 .card-photo { grid-column: span 4; grid-row: span 2; padding: 0; min-height: 460px; }
-.card-photo { background: var(--card-dark); }
-.globe-canvas {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  cursor: grab; touch-action: pan-y;
+.card-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+@media (hover: hover) {
+  .card-photo:hover img { transform: scale(1.05); }
 }
-.card-photo.is-dragging .globe-canvas { cursor: grabbing; }
 .card-dark { background: var(--card-dark); color: var(--on-dark); }
 .card-dark .label { color: rgba(243, 240, 234, 0.55); }
 .card-accent { background: var(--accent); color: #fff; }
@@ -399,6 +429,9 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
 }
 .project-wide .project-info h3 { font-size: clamp(32px, 5vw, 84px); }
 .project-wide .project-info p { font-size: clamp(15px, 1.3vw, 19px); }
+/* mirrored: text left, video right */
+.project-wide.flip { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); }
+.project-wide.flip .project-media { order: 2; }
 
 /* sound toggle on videos that have audio */
 .sound-btn {
@@ -931,6 +964,10 @@ kbd {
   background-position: center;
 }
 .from-expand .hero-video { transform: none; opacity: 0; }
+
+/* landing from the prev / next arrows: site.js slides the page in */
+.from-slide main { opacity: 0; }
+.from-slide .hero-video { transform: none; }
 .from-expand .nav,
 .from-expand .hero-top,
 .from-expand .hero-title,
@@ -964,6 +1001,16 @@ kbd {
     .nav-pill a:hover { background: var(--on-dark); color: var(--ink); }
   }
   .foot { padding-bottom: 90px; }
+  /* arrows sit just above the bottom tab bar */
+  .nav-steps { top: auto; bottom: 74px; }
+  .has-steps .foot { padding-bottom: 140px; }
+  .nav-step {
+    background: rgba(14, 13, 12, 0.82);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: var(--on-dark);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  }
+  .nav-step .arr { background: var(--on-dark); color: var(--ink); }
   .nav-cta .long { display: none; }
   .nav-cta { padding: 0 8px 0 16px; }
   .nav-cta .short { display: inline; }
@@ -985,6 +1032,11 @@ kbd {
 
 @media (max-width: 720px) {
   :root { --r-xl: 24px; --r-lg: 20px; }
+  /* brand + Thesis + CV must fit on small phones with their labels visible */
+  .nav-brand { padding: 0 14px; font-size: 15px; }
+  .nav-actions { gap: 6px; }
+  .nav-cta { padding: 0 5px 0 13px; gap: 8px; }
+  .nav-cta .dot { width: 28px; height: 28px; }
   .hero-frame { padding: 96px 20px 20px; }
   .hero-bottom p { font-size: 14px; }
   .round-btn { width: 52px; height: 52px; }
@@ -994,7 +1046,8 @@ kbd {
   .card-photo { min-height: 420px; }
   .skill-groups { grid-template-columns: 1fr; }
   .projects { grid-template-columns: 1fr; }
-  .project-wide { grid-template-columns: 1fr; }
+  .project-wide, .project-wide.flip { grid-template-columns: 1fr; }
+  .project-wide.flip .project-media { order: 0; }
   .project, .project-xl { grid-column: auto; }
   .project-media.tall { aspect-ratio: 4 / 4; }
   .marquee { padding: 12px 0; }

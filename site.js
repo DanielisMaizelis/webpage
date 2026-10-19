@@ -44,9 +44,35 @@ if (finePointer) {
   });
 }
 
+// ---------- project pages: prev / next arrows, in menu order ----------
+const SEQ = ["rl-forest.html", "danieltube.html", "class-ab-amp.html", "gta-radio.html", "water-tracker.html", "other-projects.html"];
+const pageOf = href => new URL(href, location.href).pathname.split("/").pop() || "index.html";
+const hereIdx = SEQ.indexOf(pageOf(location.href));
+const pill = document.querySelector(".nav-pill");
+
+// The bottom tab bar scrolls sideways on phones: start with the current page's tab in view
+const activeTab = pill && pill.querySelector("a.is-active");
+if (activeTab && pill.scrollWidth > pill.clientWidth) {
+  pill.scrollLeft = activeTab.offsetLeft - (pill.clientWidth - activeTab.offsetWidth) / 2;
+}
+
+if (hereIdx !== -1 && pill) {
+  const names = {};
+  pill.querySelectorAll("a").forEach(a => { names[pageOf(a.href)] = a.textContent.trim(); });
+  const prev = SEQ[(hereIdx - 1 + SEQ.length) % SEQ.length];
+  const next = SEQ[(hereIdx + 1) % SEQ.length];
+  const steps = document.createElement("div");
+  steps.className = "nav-steps";
+  steps.innerHTML =
+    `<a class="nav-step go-prev" href="${prev}" data-dir="prev" aria-label="Previous project: ${names[prev]}"><span class="arr">←</span></a>` +
+    `<a class="nav-step go-next" href="${next}" data-dir="next" aria-label="Next project: ${names[next]}">Next project<span class="arr">→</span></a>`;
+  document.querySelector(".nav").appendChild(steps);
+  document.body.classList.add("has-steps");
+}
+
 // Without GSAP (blocked CDN, offline) just show the page
 if (!window.gsap || !window.ScrollTrigger) {
-  document.documentElement.classList.remove("from-expand", "intro-pending");
+  document.documentElement.classList.remove("from-expand", "intro-pending", "from-slide");
   if (heroVideo) heroVideo.style.transform = "none";
 } else {
   initMotion();
@@ -58,7 +84,7 @@ function initMotion() {
   splitWords();
 
   if (reduceMotion) {
-    document.documentElement.classList.remove("from-expand", "intro-pending");
+    document.documentElement.classList.remove("from-expand", "intro-pending", "from-slide");
     if (heroVideo) gsap.set(heroVideo, { scale: 1 });
     document.querySelectorAll(".w").forEach(w => (w.style.opacity = 1));
     initNav();
@@ -70,6 +96,7 @@ function initMotion() {
   initNav();
   initCursor();
   initTransitions();
+  initSlides();
 }
 
 // Wrap each word of .reveal-words in a span for the scroll-scrubbed reveal
@@ -111,6 +138,15 @@ function startIntro() {
     return;
   }
   const root = document.documentElement;
+  // Came in from a neighbouring project: the page slides in from the side it lives on
+  if (navMode === "slide-next" || navMode === "slide-prev") {
+    if (heroVideo) gsap.set(heroVideo, { scale: 1 });
+    const from = (navMode === "slide-next" ? 1 : -1) * window.innerWidth * 0.35;
+    gsap.fromTo("main", { x: from, opacity: 0 }, { x: 0, opacity: 1, duration: 0.9, ease: "expo.out", clearProps: "transform,opacity" });
+    gsap.from(".hero-title .line > span", { yPercent: 110, duration: 1.1, stagger: 0.08, ease: "expo.out", delay: 0.15 });
+    root.classList.remove("from-slide");
+    return;
+  }
   // Skip the reveal if we landed mid-page (e.g. other-projects.html#robocar)
   if (window.scrollY > window.innerHeight * 0.5) {
     if (heroVideo) gsap.set(heroVideo, { scale: 1 });
@@ -345,6 +381,42 @@ function initTransitions() {
     if (!e.persisted) return;
     if (expanded) expanded.restore();
     gsap.set(".nav, main", { opacity: 1 });
+  });
+}
+
+// ---------- moving between project pages slides sideways, in menu order ----------
+let sliding = false;
+
+function initSlides() {
+  if (hereIdx === -1) return;
+  document.querySelectorAll("a[href]").forEach(a => {
+    const to = SEQ.indexOf(pageOf(a.href));
+    if (to === -1 || to === hereIdx || a.hasAttribute("download")) return;
+    a.addEventListener("click", e => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      slideTo(a.href, a.dataset.dir || (to > hereIdx ? "next" : "prev"));
+    });
+  });
+
+  window.addEventListener("pageshow", e => {
+    if (!e.persisted) return;
+    sliding = false;
+    gsap.set("main", { clearProps: "transform,opacity" });
+  });
+}
+
+// The current page leaves towards the side opposite where the next one comes from
+function slideTo(href, dir) {
+  if (sliding) return;
+  sliding = true;
+  try { sessionStorage.setItem("v2-nav", "slide-" + dir); } catch (e) {}
+  gsap.to("main", {
+    x: (dir === "next" ? -1 : 1) * window.innerWidth * 0.35,
+    opacity: 0,
+    duration: 0.45,
+    ease: "power2.in",
+    onComplete: () => { location.href = href; }
   });
 }
 

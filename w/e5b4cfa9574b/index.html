@@ -37,6 +37,14 @@
     </button>
   </header>
 
+  <!-- the three tabs sit at the very top, across the full width -->
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" class="tab is-on" data-tab="video" aria-selected="true">Videos</button>
+    <button role="tab" class="tab" data-tab="audio" aria-selected="false">Audio</button>
+    <button role="tab" class="tab" data-tab="words" aria-selected="false">Words</button>
+    <span class="tab-ink" id="tab-ink" aria-hidden="true"></span>
+  </nav>
+
   <!-- the three slots live here, and move into the player when one opens -->
   <section class="today" id="today" aria-label="Today's three words">
     <div class="today-head">
@@ -46,19 +54,12 @@
     <div class="slots" id="slots"></div>
   </section>
 
-  <nav class="tabs" id="tabs" role="tablist">
-    <button role="tab" class="tab is-on" data-tab="video" aria-selected="true">Videos</button>
-    <button role="tab" class="tab" data-tab="audio" aria-selected="false">Audio</button>
-    <button role="tab" class="tab" data-tab="words" aria-selected="false">Words</button>
-    <span class="tab-ink" id="tab-ink" aria-hidden="true"></span>
-  </nav>
-
   <main class="library" id="library"></main>
 
   <footer class="dock">
     <button class="add-btn" id="add-btn" type="button">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      Add from Files
+      Add from iCloud Drive
     </button>
   </footer>
 </div>
@@ -72,6 +73,8 @@
     <div class="scrim bottom"></div>
 
     <!-- #today is moved in here while playing -->
+
+    <div class="subs" id="subs" aria-live="off"></div>
 
     <div class="chrome" id="chrome">
       <div class="chrome-top">
@@ -105,7 +108,10 @@
         </div>
         <div class="times">
           <span id="t-now">0:00</span>
-          <button class="rate" id="rate-btn" type="button">1×</button>
+          <span class="pills">
+            <button class="pill" id="cc-btn" type="button" aria-label="Subtitles">CC</button>
+            <button class="pill" id="rate-btn" type="button">1×</button>
+          </span>
           <span id="t-left">-0:00</span>
         </div>
       </div>
@@ -135,7 +141,31 @@
   </form>
 </div>
 
-<input type="file" id="filepick" multiple accept="video/*,audio/*,image/*,.json,.mkv,.mp4,.m4v,.mov,.mp3,.m4a" hidden>
+<!-- ============================ importing ========================== -->
+<div class="import-wrap" id="import-wrap" hidden>
+  <div class="import-bg"></div>
+  <section class="import" role="status" aria-live="polite">
+    <header>
+      <div>
+        <span class="label" id="imp-stage">Copying onto this device</span>
+        <p id="imp-count">—</p>
+      </div>
+      <span class="spinner" id="imp-spin" aria-hidden="true"></span>
+    </header>
+
+    <div class="imp-bar"><i id="imp-fill"></i></div>
+    <p class="imp-now" id="imp-now"></p>
+
+    <ul class="imp-list" id="imp-list"></ul>
+
+    <footer>
+      <span class="label dim" id="imp-quota"></span>
+      <button class="ghost-btn" id="imp-done" type="button" hidden>Done</button>
+    </footer>
+  </section>
+</div>
+
+<input type="file" id="filepick" multiple hidden>
 <div class="toast" id="toast" hidden></div>
 <div class="grain" aria-hidden="true"></div>
 
