@@ -422,23 +422,6 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
 }
 .project-xl { grid-column: span 2; }
 
-/* full-width featured card with a portrait video on the left */
-.project-wide {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
-  gap: 10px;
-}
-.project-wide .project-media { aspect-ratio: 4 / 5; }
-.project-wide .project-info {
-  align-content: end;
-  padding: clamp(18px, 3vw, 48px);
-}
-.project-wide .project-info h3 { font-size: clamp(32px, 5vw, 84px); }
-.project-wide .project-info p { font-size: clamp(15px, 1.3vw, 19px); }
-/* mirrored: text left, video right */
-.project-wide.flip { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); }
-.project-wide.flip .project-media { order: 2; }
 
 /* sound toggle on videos that have audio */
 .sound-btn {
@@ -1037,14 +1020,6 @@ kbd {
   .nav-actions { gap: 6px; }
   .nav-cta { padding: 0 5px 0 13px; gap: 8px; }
   .nav-cta .dot { width: 28px; height: 28px; }
-}
-/* very narrow phones (iPhone with Display Zoom is 320px): drop the circles so CV never falls off the edge */
-@media (max-width: 420px) {
-  .nav { gap: 6px; }
-  .nav-brand { height: 40px; padding: 0 12px; font-size: 14px; flex-shrink: 1; min-width: 0; overflow: hidden; }
-  .nav-actions { flex-shrink: 0; }
-  .nav-cta { height: 40px; padding: 0 12px; gap: 4px; font-size: 13px; }
-  .nav-cta .dot { width: 14px; height: 14px; background: none; }
   .hero-frame { padding: 96px 20px 20px; }
   .hero-bottom p { font-size: 14px; }
   .round-btn { width: 52px; height: 52px; }
@@ -1054,8 +1029,6 @@ kbd {
   .card-photo { min-height: 420px; }
   .skill-groups { grid-template-columns: 1fr; }
   .projects { grid-template-columns: 1fr; }
-  .project-wide, .project-wide.flip { grid-template-columns: 1fr; }
-  .project-wide.flip .project-media { order: 0; }
   .project, .project-xl { grid-column: auto; }
   .project-media.tall { aspect-ratio: 4 / 4; }
   .marquee { padding: 12px 0; }
@@ -1065,6 +1038,14 @@ kbd {
   .step { min-height: 0; }
   .bleed { height: 70vh; }
   .next { min-height: 56vh; }
+}
+/* very narrow phones (iPhone with Display Zoom is 320px): drop the circles so CV never falls off the edge */
+@media (max-width: 420px) {
+  .nav { gap: 6px; }
+  .nav-brand { height: 40px; padding: 0 12px; font-size: 14px; flex-shrink: 1; min-width: 0; overflow: hidden; }
+  .nav-actions { flex-shrink: 0; }
+  .nav-cta { height: 40px; padding: 0 12px; gap: 4px; font-size: 13px; }
+  .nav-cta .dot { width: 14px; height: 14px; background: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

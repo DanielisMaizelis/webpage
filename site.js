@@ -53,9 +53,15 @@ const pill = document.querySelector(".nav-pill");
 
 // The bottom tab bar scrolls sideways on phones: start with the current page's tab in view
 const activeTab = pill && pill.querySelector("a.is-active");
-if (activeTab && pill.scrollWidth > pill.clientWidth) {
-  pill.scrollLeft = activeTab.offsetLeft - (pill.clientWidth - activeTab.offsetWidth) / 2;
-}
+const centreActiveTab = () => {
+  if (activeTab && pill.scrollWidth > pill.clientWidth) {
+    pill.scrollLeft = activeTab.offsetLeft - (pill.clientWidth - activeTab.offsetWidth) / 2;
+  }
+};
+// again once the web font and the page have loaded: tab widths change with them
+centreActiveTab();
+window.addEventListener("load", centreActiveTab);
+if (document.fonts) document.fonts.ready.then(centreActiveTab);
 
 if (hereIdx !== -1 && pill) {
   const names = {};
