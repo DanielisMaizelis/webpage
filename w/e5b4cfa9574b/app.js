@@ -884,8 +884,16 @@ function hud(delta, target) {
    and repeated taps add up — +10, +20, +30 — clearing 600ms after the last. */
 let rippleSide = null, rippleTotal = 0, rippleTimer;
 
-function ripple(side) {
+/* `clear` is true for a tap on the picture: the controls get out of the way
+   the way YouTube does, or the label lands straight on the skip button. It is
+   false when the skip button itself was pressed — hiding the control someone
+   is using would be rude. */
+function ripple(side, clear) {
   const el = $("#ripple");
+  if (clear) {
+    $("#player").classList.add("ui-off");
+    clearTimeout(hideTimer);
+  }
   if (side !== rippleSide) rippleTotal = 0;
   rippleSide = side;
   rippleTotal += 10;
@@ -903,6 +911,7 @@ function ripple(side) {
     el.hidden = true;
     rippleSide = null;
     rippleTotal = 0;
+    if (clear && $("#video").paused) showChrome();
   }, 620);
   return rippleTotal;
 }
@@ -1219,8 +1228,8 @@ function wire() {
   const video = $("#video");
   $("#back-btn").addEventListener("click", closePlayer);
   $("#play-btn").addEventListener("click", () => (video.paused ? video.play() : video.pause()));
-  $("#back10").addEventListener("click", () => { ripple(-1); nudge(-10); });
-  $("#fwd10").addEventListener("click", () => { ripple(1); nudge(10); });
+  $("#back10").addEventListener("click", () => { nudge(-10); ripple(-1, false); });
+  $("#fwd10").addEventListener("click", () => { nudge(10); ripple(1, false); });
   $("#full-btn").addEventListener("click", toggleFullscreen);
   $("#lock-btn").addEventListener("click", () => {
     setLocked(true);
@@ -1250,8 +1259,17 @@ function wire() {
      on the right for volume, sideways to scrub, double tap to skip. */
   const stage = $("#stage");
   let g = null;
+  let touchedAt = 0;
+
+  /* a touch is followed by a synthetic mouse event; counting both turns
+     one double tap into four and makes the skip jump twice as far */
+  const ghost = event => {
+    if (event.pointerType === "touch") { touchedAt = Date.now(); return false; }
+    return Date.now() - touchedAt < 700;
+  };
 
   stage.addEventListener("pointerdown", event => {
+    if (ghost(event)) return;
     if (event.target.closest(".chrome") || event.target.closest("#today") ||
         event.target.closest(".unlock")) return;
     g = {
@@ -1293,7 +1311,7 @@ function wire() {
   });
 
   stage.addEventListener("pointerup", event => {
-    if (!g) return;
+    if (!g || ghost(event)) return;
     const moved = g.axis !== null;
     const quick = Date.now() - g.at < 320;
     const held = g;
@@ -1315,8 +1333,8 @@ function wire() {
     const side = event.clientX < stage.clientWidth / 2 ? -1 : 1;
     // 650ms, the window the double-tap players settle on
     if (now - lastTap < 650 && side === lastSide) {
-      ripple(side);
       nudge(side * 10);
+      ripple(side, true);
       lastTap = now;
       return;
     }

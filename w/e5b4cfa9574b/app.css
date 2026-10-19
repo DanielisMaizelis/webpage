@@ -526,7 +526,7 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: calc(var(--top) + 74px) calc(var(--right) + var(--gutter))
+  padding: calc(var(--top) + 92px) calc(var(--right) + var(--gutter))
            calc(var(--bottom) + 14px) calc(var(--left) + var(--gutter));
   opacity: 1;
   transition: opacity 0.3s var(--ease);
@@ -687,11 +687,11 @@ svg.solid { fill: currentColor; stroke: none; }
 .action.is-on { color: var(--accent); }
 .action[disabled] { opacity: 0.35; }
 
-/* a phone in portrait has no room for five labels */
+/* portrait keeps the labels, just tighter */
 @media (max-width: 599px) {
-  .action span { display: none; }
-  .action { flex: 0 1 auto; padding: 10px; }
-  .actions { justify-content: space-around; }
+  .action { padding: 7px 2px; font-size: 9.5px; gap: 5px; }
+  .action svg { width: 20px; height: 20px; }
+  .actions { gap: 2px; }
 }
 
 /* --------------------------------------------- brightness and volume */
@@ -841,15 +841,16 @@ svg.solid { fill: currentColor; stroke: none; }
   transform: translateY(-50%);
   display: grid;
   justify-items: center;
-  gap: 5px;
+  gap: 9px;
   color: var(--paper);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
 }
-.ripple.left .ripple-core { left: 13%; }
-.ripple.right .ripple-core { right: 13%; }
-.ripple-text { font-size: 12.5px; font-weight: 500; letter-spacing: 0.01em; }
+.ripple.left .ripple-core { left: 11%; }
+.ripple.right .ripple-core { right: 11%; }
+.ripple-text { font-size: 13px; font-weight: 500; letter-spacing: 0.01em; white-space: nowrap; }
 
 .chev { display: flex; }
-.chev svg { width: 20px; height: 20px; margin: 0 -6px; opacity: 0.25; }
+.chev svg { width: 24px; height: 24px; margin: 0 -7px; opacity: 0.25; stroke-width: 2.2; }
 .ripple.right .chev { transform: scaleX(-1); }
 .chev svg:nth-child(1) { animation: chev 0.72s infinite 0s; }
 .chev svg:nth-child(2) { animation: chev 0.72s infinite 0.12s; }
@@ -891,7 +892,7 @@ svg.solid { fill: currentColor; stroke: none; }
   .player .slot { padding: 7px 14px; min-height: 46px; }
   .player .slot .he { font-size: clamp(20px, 3.9vh, 30px); }
   .player .slot .en { font-size: clamp(11.5px, 1.9vh, 14px); }
-  .chrome { padding-top: calc(var(--top) + 60px); }
+  .chrome { padding-top: calc(var(--top) + 76px); }
   .actions { justify-content: center; gap: 10px; }
   .action { flex: 0 1 150px; }
 }
@@ -899,7 +900,7 @@ svg.solid { fill: currentColor; stroke: none; }
   .player { --play: 60px; --play-glyph: 25px; --skip: 48px; --skip-glyph: 26px; --ctl: 40px; --ctl-glyph: 21px; }
   .player .slot { min-height: 38px; padding: 5px 12px; }
   .player .slot .he { font-size: clamp(18px, 4.2vh, 24px); }
-  .chrome { padding-top: calc(var(--top) + 50px); padding-bottom: calc(var(--bottom) + 8px); }
+  .chrome { padding-top: calc(var(--top) + 64px); padding-bottom: calc(var(--bottom) + 8px); }
   .action { padding: 5px 4px; font-size: 10.5px; }
   .action svg { width: 19px; height: 19px; }
   .scrub { height: 18px; }
