@@ -763,9 +763,219 @@ function openPlayer(item) {
 
   cueAt = -1;
   $("#subs").innerHTML = "";
+  setLocked(false);
+  closeSlider();
+  applyBright();
+  applyVolume();
+  video.playbackRate = rate;
+  $("#speed-btn").classList.toggle("is-on", rate !== 1);
+  // a dead control is worse than none: in a home-screen app there is no
+  // fullscreen to request, the window already is one
+  $("#full-btn").hidden = !fullscreenAvailable();
   video.play().then(() => armHide()).catch(() => showChrome());
   mediaSession(item);
   setTimeout(syncCC, 400);          // native tracks only appear once metadata lands
+}
+
+/* --------------------------------------------- picture, sound, lock */
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+let bright = clamp(Store.read("bright", 1), 0.2, 1.8);
+let volume = clamp(Store.read("volume", 1), 0, 1.5);
+let rate = Store.read("rate", 1);
+let locked = false;
+
+/** Dimming is a composited black overlay; brightening needs a filter. */
+function applyBright() {
+  $("#dim").style.opacity = bright < 1 ? (1 - bright).toFixed(3) : 0;
+  const lift = bright > 1 ? `brightness(${bright.toFixed(2)})` : "";
+  $("#video").style.filter = lift;
+  $("#art").style.filter = lift;
+}
+
+/* iOS ignores video.volume outright, so the sound goes through Web Audio —
+   which also allows a boost past 100% for a quiet recording. If the audio
+   graph will not start, the element is reconnected and nothing is lost. */
+const sound = { ctx: null, src: null, gain: null, dead: false };
+
+function applyVolume() {
+  const video = $("#video");
+  if (!sound.dead && (sound.ctx || volume !== 1)) {
+    try {
+      if (!sound.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) throw new Error("no web audio");
+        sound.ctx = new AC();
+        sound.src = sound.ctx.createMediaElementSource(video);
+        sound.gain = sound.ctx.createGain();
+        sound.src.connect(sound.gain).connect(sound.ctx.destination);
+      }
+      sound.gain.gain.value = volume;
+      sound.ctx.resume().then(() => {
+        if (sound.ctx.state !== "running") bypass();
+      }).catch(bypass);
+      video.volume = 1;
+      return;
+    } catch {
+      bypass();
+    }
+  }
+  video.volume = clamp(volume, 0, 1);
+}
+
+/** Give up on the audio graph and let the element play straight through. */
+function bypass() {
+  if (sound.src) {
+    try { sound.gain.disconnect(); sound.src.disconnect(); sound.src.connect(sound.ctx.destination); }
+    catch { /* nothing more to do */ }
+  }
+  sound.dead = true;
+  $("#video").volume = clamp(volume, 0, 1);
+}
+
+function setLocked(on) {
+  locked = on;
+  $("#player").classList.toggle("locked", on);
+  $("#unlock-btn").hidden = !on;
+  $("#lock-btn").classList.toggle("is-on", on);
+  if (on) { showChrome(); armHide(); } else showChrome();
+}
+
+/* ------------------------------------------------------- the readout */
+
+const GLYPH = {
+  bright: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M19 5l-1.5 1.5M6.5 17.5L5 19"/></svg>',
+  volume: '<svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 3V7L8 10H5z"/><path d="M16 9.5a3.5 3.5 0 010 5M18.5 7a7 7 0 010 10"/></svg>',
+  mute:   '<svg viewBox="0 0 24 24"><path d="M5 10v4h3l4 3V7L8 10H5z"/><path d="M16 10l4 4M20 10l-4 4"/></svg>',
+  seek:   '<svg viewBox="0 0 24 24"><path d="M4 12h14M13 7l5 5-5 5"/></svg>',
+};
+
+let hudTimer;
+function hud(kind, fraction, label) {
+  $("#hud-icon").innerHTML = GLYPH[kind === "volume" && fraction <= 0 ? "mute" : kind];
+  $("#hud-fill").style.width = (clamp(fraction, 0, 1) * 100).toFixed(0) + "%";
+  $("#hud-val").textContent = label;
+  $("#hud").hidden = false;
+  clearTimeout(hudTimer);
+  hudTimer = setTimeout(() => ($("#hud").hidden = true), 850);
+}
+
+/* ------------------------------------------------- the slider drawer */
+
+let sliderKind = null, sliderTimer;
+function openSlider(kind) {
+  if (sliderKind === kind) return closeSlider();
+  sliderKind = kind;
+  const range = $("#s-range");
+  $("#s-icon").innerHTML = GLYPH[kind];
+  range.max = kind === "bright" ? 180 : 150;
+  range.min = kind === "bright" ? 20 : 0;
+  range.value = Math.round((kind === "bright" ? bright : volume) * 100);
+  $("#s-val").textContent = range.value + "%";
+  $("#slider-row").hidden = false;
+  $("#bright-btn").classList.toggle("is-on", kind === "bright");
+  $("#vol-btn").classList.toggle("is-on", kind === "volume");
+  nudgeSliderTimer();
+}
+
+function closeSlider() {
+  sliderKind = null;
+  $("#slider-row").hidden = true;
+  $("#bright-btn").classList.remove("is-on");
+  $("#vol-btn").classList.remove("is-on");
+}
+
+function nudgeSliderTimer() {
+  clearTimeout(sliderTimer);
+  sliderTimer = setTimeout(closeSlider, 5000);
+}
+
+/* ------------------------------------------------- the options panel */
+
+const TICK = '<svg viewBox="0 0 24 24"><path d="M4 13l5 5L20 7"/></svg>';
+
+function openPanel(title, note, rows) {
+  $("#panel-title").textContent = title;
+  $("#panel-note").textContent = note || "";
+  $("#panel-note").hidden = !note;
+  const list = $("#panel-list");
+  list.innerHTML = "";
+  rows.forEach(row => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = `<span>${esc(row.label)}${row.sub ? `<span class="sub">${esc(row.sub)}</span>` : ""}</span>
+                   <span class="on">${row.on ? TICK : ""}</span>`;
+    b.addEventListener("click", () => { closePanel(); row.pick(); });
+    li.appendChild(b);
+    list.appendChild(li);
+  });
+  $("#panel-wrap").hidden = false;
+  resumeAfterPanel = !$("#video").paused;
+  if (resumeAfterPanel) $("#video").pause();
+}
+
+let resumeAfterPanel = false;
+function closePanel() {
+  $("#panel-wrap").hidden = true;
+  if (resumeAfterPanel) $("#video").play().catch(() => {});
+  resumeAfterPanel = false;
+  armHide();
+}
+
+function subtitlePanel() {
+  const item = state.current;
+  const native = [...($("#video").textTracks || [])];
+  const note = item && item.cues
+    ? null
+    : native.length
+      ? "This file carries its own subtitle track."
+      : "This video came without a word list, so there is nothing to switch. Re-render it in DanielTube with the phone copy on, and add the .json beside the video.";
+  const rows = SUB_MODES.map((label, i) => ({
+    label: i === 0 ? "Off" : label,
+    on: subMode === i,
+    pick: () => { subMode = i; Store.write("subs", i); syncCC(); },
+  }));
+  openPanel("Subtitles", note, rows);
+}
+
+const RATES = [0.5, 0.75, 0.85, 1, 1.25, 1.5, 2];
+function speedPanel() {
+  openPanel("Playback speed", null, RATES.map(r => ({
+    label: r === 1 ? "Normal (1×)" : r + "×",
+    on: Math.abs(rate - r) < 0.001,
+    pick: () => {
+      rate = r;
+      Store.write("rate", r);
+      $("#video").playbackRate = r;
+      $("#speed-btn").classList.toggle("is-on", r !== 1);
+      toast(r === 1 ? "Normal speed" : `Speed ${r}×`);
+    },
+  })));
+}
+
+/* --------------------------------------------------------- full screen */
+
+function fullscreenAvailable() {
+  const el = $("#stage");
+  const standalone = window.matchMedia("(display-mode: standalone)").matches ||
+                     window.navigator.standalone === true;
+  return !standalone && !!(el.requestFullscreen || el.webkitRequestFullscreen);
+}
+
+function toggleFullscreen() {
+  const el = $("#stage");
+  const doc = document;
+  const on = doc.fullscreenElement || doc.webkitFullscreenElement;
+  try {
+    if (on) (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+    else (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+  } catch { /* refused */ }
+  if (screen.orientation && screen.orientation.lock && !on) {
+    screen.orientation.lock("landscape").catch(() => {});
+  }
+  armHide();
 }
 
 /* ------------------------------------------------------------ subtitles */
@@ -779,8 +989,8 @@ function syncCC() {
   const item = state.current;
   const native = [...($("#video").textTracks || [])];
   const mine = !!(item && item.cues);
-  $("#cc-btn").hidden = !mine && !native.length;
-  $("#cc-btn").classList.toggle("is-on", subMode > 0);
+  $("#subs-btn").disabled = !mine && !native.length;
+  $("#subs-btn").classList.toggle("is-on", subMode > 0 && (mine || native.length));
   $("#subs").classList.toggle("bare", subMode === 2);
   native.forEach(t => { t.mode = !mine && subMode > 0 ? "showing" : "disabled"; });
   if (!subMode) { $("#subs").innerHTML = ""; cueAt = -1; }
@@ -854,6 +1064,8 @@ function closePlayer() {
   if (url) { URL.revokeObjectURL(url); url = null; }
   $("#player").hidden = true;
   $("#subs").innerHTML = "";
+  closeSlider();
+  setLocked(false);
   cueAt = -1;
   document.body.style.overflow = "";
   $("#shell").insertBefore($("#today"), $("#tabs"));
@@ -939,20 +1151,113 @@ function wire() {
   $("#play-btn").addEventListener("click", () => (video.paused ? video.play() : video.pause()));
   $("#back10").addEventListener("click", () => nudge(-10));
   $("#fwd10").addEventListener("click", () => nudge(10));
-  $("#cc-btn").addEventListener("click", cycleCC);
+  $("#full-btn").addEventListener("click", toggleFullscreen);
+  $("#lock-btn").addEventListener("click", () => {
+    setLocked(true);
+    toast("Controls locked");
+  });
+  $("#unlock-btn").addEventListener("click", () => setLocked(false));
+  $("#subs-btn").addEventListener("click", subtitlePanel);
+  $("#speed-btn").addEventListener("click", speedPanel);
+  $("#bright-btn").addEventListener("click", () => openSlider("bright"));
+  $("#vol-btn").addEventListener("click", () => openSlider("volume"));
+  $("#panel-close").addEventListener("click", closePanel);
+  $("#panel-bg").addEventListener("click", closePanel);
 
-  $("#stage").addEventListener("click", event => {
-    if (event.target.closest(".chrome") || event.target.closest("#today")) return;
+  $("#s-range").addEventListener("input", event => {
+    const v = Number(event.target.value) / 100;
+    if (sliderKind === "bright") { bright = v; applyBright(); }
+    else { volume = v; applyVolume(); }
+    $("#s-val").textContent = event.target.value + "%";
+    nudgeSliderTimer();
+  });
+  $("#s-range").addEventListener("change", () => {
+    Store.write("bright", bright);
+    Store.write("volume", volume);
+  });
+
+  /* VLC-style gestures: swipe up and down on the left for brightness and
+     on the right for volume, sideways to scrub, double tap to skip. */
+  const stage = $("#stage");
+  let g = null;
+
+  stage.addEventListener("pointerdown", event => {
+    if (event.target.closest(".chrome") || event.target.closest("#today") ||
+        event.target.closest(".unlock")) return;
+    g = {
+      x: event.clientX, y: event.clientY, at: Date.now(),
+      axis: null,
+      right: event.clientX > stage.clientWidth / 2,
+      bright0: bright, volume0: volume, time0: video.currentTime,
+    };
+  });
+
+  stage.addEventListener("pointermove", event => {
+    if (!g || locked) return;
+    const dx = event.clientX - g.x;
+    const dy = event.clientY - g.y;
+    if (!g.axis) {
+      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+      g.axis = Math.abs(dy) > Math.abs(dx) ? "y" : "x";
+      if (g.axis === "y") closeSlider();
+    }
+
+    if (g.axis === "y") {
+      const span = Math.max(160, stage.clientHeight * 0.65);
+      const step = -dy / span;
+      if (g.right) {
+        volume = clamp(g.volume0 + step * 1.5, 0, 1.5);
+        applyVolume();
+        hud("volume", volume / 1.5, Math.round(volume * 100) + "%");
+      } else {
+        bright = clamp(g.bright0 + step * 1.6, 0.2, 1.8);
+        applyBright();
+        hud("bright", (bright - 0.2) / 1.6, Math.round(bright * 100) + "%");
+      }
+    } else {
+      const span = Math.max(200, stage.clientWidth);
+      g.seek = clamp(g.time0 + (dx / span) * Math.min(video.duration || 0, 180),
+                     0, video.duration || 0);
+      const delta = Math.round(g.seek - g.time0);
+      hud("seek", video.duration ? g.seek / video.duration : 0,
+          (delta >= 0 ? "+" : "−") + fmt(Math.abs(delta)));
+    }
+  });
+
+  stage.addEventListener("pointerup", event => {
+    if (!g) return;
+    const moved = g.axis !== null;
+    const quick = Date.now() - g.at < 320;
+    const held = g;
+    g = null;
+
+    if (moved) {
+      if (held.axis === "x" && held.seek != null) { video.currentTime = held.seek; renderCue(true); }
+      if (held.axis === "y") {
+        Store.write("bright", bright);
+        Store.write("volume", volume);
+      }
+      armHide();
+      return;
+    }
+    if (!quick) return;
+    if (locked) { showChrome(); armHide(); return; }
+
     const now = Date.now();
     if (now - lastTap < 300) {                       // double tap: skip
-      const side = event.clientX < window.innerWidth / 2 ? -10 : 10;
+      const side = event.clientX < stage.clientWidth / 2 ? -10 : 10;
       nudge(side);
-      toast(side < 0 ? "− 10 seconds" : "+ 10 seconds");
-    } else {
-      $("#player").classList.contains("ui-off") ? armHide() : $("#player").classList.add("ui-off");
+      hud("seek", video.duration ? video.currentTime / video.duration : 0,
+          (side < 0 ? "−" : "+") + "10s");
+      lastTap = 0;
+      return;
     }
+    closeSlider();
+    $("#player").classList.contains("ui-off") ? armHide() : $("#player").classList.add("ui-off");
     lastTap = now;
   });
+
+  stage.addEventListener("pointercancel", () => { g = null; });
 
   video.addEventListener("play", () => { setPlayIcon(true); armHide(); });
   video.addEventListener("pause", () => { setPlayIcon(false); showChrome(); saveProgress(); });
@@ -992,13 +1297,11 @@ function wire() {
     end();
   });
 
-  const rates = [1, 0.85, 0.75, 1.25, 1.5];
-  let rateAt = 0;
-  $("#rate-btn").addEventListener("click", () => {
-    rateAt = (rateAt + 1) % rates.length;
-    video.playbackRate = rates[rateAt];
-    $("#rate-btn").textContent = rates[rateAt] + "×";
-    armHide();
+  /* keep the buffered stripe behind the scrubber honest */
+  video.addEventListener("progress", () => {
+    const d = video.duration || 0;
+    const end = video.buffered.length ? video.buffered.end(video.buffered.length - 1) : 0;
+    $("#buf").style.width = d ? (end / d) * 100 + "%" : "0%";
   });
 
   /* keyboard, for testing on a laptop */
@@ -1012,6 +1315,9 @@ function wire() {
     if (event.key === "ArrowLeft") nudge(-10);
     if (event.key === "ArrowRight") nudge(10);
     if (event.key === "c") cycleCC();
+    if (event.key === "f") toggleFullscreen();
+    if (event.key === "ArrowUp") { volume = clamp(volume + 0.1, 0, 1.5); applyVolume(); hud("volume", volume / 1.5, Math.round(volume * 100) + "%"); }
+    if (event.key === "ArrowDown") { volume = clamp(volume - 0.1, 0, 1.5); applyVolume(); hud("volume", volume / 1.5, Math.round(volume * 100) + "%"); }
     if (event.key === "Escape") closePlayer();
   });
 

@@ -411,6 +411,9 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .add-btn svg { width: 18px; height: 18px; stroke-width: 2; }
 
 /* ============================= player ============================= */
+/* One size system for every control, so nothing looks hand-placed:
+   --ctl secondary, --skip transport, --play primary. The landscape and
+   short-screen rules only move those three numbers. */
 
 .player {
   position: fixed;
@@ -418,11 +421,30 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
   z-index: 100;
   background: #000;
   animation: rise 0.45s var(--ease);
+
+  --ctl: 44px;
+  --ctl-glyph: 23px;
+  --skip: 58px;
+  --skip-glyph: 31px;
+  --play: 78px;
+  --play-glyph: 32px;
+  --gutter: 20px;
 }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
 
-.stage { position: relative; width: 100%; height: 100%; overflow: hidden; }
-#video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.stage { position: relative; width: 100%; height: 100%; overflow: hidden; touch-action: none; }
+#video { width: 100%; height: 100%; object-fit: contain; background: #000; display: block; }
+
+/* software dimming — a composited overlay, cheaper than filtering video */
+.dim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s linear;
+}
 
 .art { position: absolute; inset: 0; display: grid; place-items: center; overflow: hidden; }
 .art img {
@@ -432,7 +454,7 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
   border-radius: var(--r-xl);
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
 }
-.art::before {   /* blurred wash of the cover behind it */
+.art::before {
   content: "";
   position: absolute;
   inset: -20%;
@@ -441,15 +463,17 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
   opacity: 0.5;
 }
 
-.scrim { position: absolute; left: 0; right: 0; pointer-events: none; transition: opacity 0.4s var(--ease); }
-.scrim.top { top: 0; height: 42%; background: linear-gradient(to bottom, rgba(0,0,0,.72), transparent); }
-.scrim.bottom { bottom: 0; height: 46%; background: linear-gradient(to top, rgba(0,0,0,.78), transparent); }
-.player.ui-off .scrim.bottom { opacity: 0; }
+.scrim { position: absolute; left: 0; right: 0; pointer-events: none; z-index: 1;
+         transition: opacity 0.4s var(--ease); }
+.scrim.top { top: 0; height: 34%; background: linear-gradient(to bottom, rgba(0,0,0,.76), transparent); }
+.scrim.bottom { bottom: 0; height: 52%; background: linear-gradient(to top, rgba(0,0,0,.82), transparent); }
+.player.ui-off .scrim.bottom, .player.locked .scrim.bottom { opacity: 0; }
+.player.locked .scrim.top { opacity: 0; }
 
 /* the three words, pinned over the picture — the whole point of the app */
 .player #today {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   top: calc(var(--top) + 8px);
   left: calc(var(--left) + 10px);
   right: calc(var(--right) + 10px);
@@ -475,83 +499,101 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .player .slot.empty .plus { width: 24px; height: 24px; }
 .player .slot.empty .plus svg { width: 14px; height: 14px; }
 .player .slot.filled::after { display: none; }
+.player.locked #today { pointer-events: none; }
+
+/* ------------------------------------------------------------- chrome */
 
 .chrome {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: calc(var(--top) + 76px) calc(var(--right) + 16px)
-           calc(var(--bottom) + 16px) calc(var(--left) + 16px);
+  padding: calc(var(--top) + 74px) calc(var(--right) + var(--gutter))
+           calc(var(--bottom) + 14px) calc(var(--left) + var(--gutter));
   opacity: 1;
-  transition: opacity 0.35s var(--ease);
+  transition: opacity 0.3s var(--ease);
 }
-.player.ui-off .chrome { opacity: 0; pointer-events: none; }
+.player.ui-off .chrome, .player.locked .chrome { opacity: 0; pointer-events: none; }
 
-.chrome-top { display: flex; align-items: flex-start; gap: 12px; }
-.now { min-width: 0; padding-top: 7px; }
-.now p {
-  margin: 2px 0 0;
-  font-size: 14px;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.icon-btn {
-  width: 44px; height: 44px;
+/* every round control is the same object at three sizes */
+.ctl {
+  flex: none;
+  width: var(--ctl);
+  height: var(--ctl);
   border-radius: 50%;
   display: grid;
   place-items: center;
   color: var(--paper);
   position: relative;
-  transition: transform 0.4s var(--ease), background 0.3s var(--ease);
+  transition: transform 0.35s var(--ease), background 0.25s var(--ease);
 }
-.icon-btn:active { transform: scale(0.9); background: rgba(243, 240, 234, 0.1); }
-.icon-btn.big { width: 56px; height: 56px; }
-.icon-btn.big svg { width: 30px; height: 30px; }
-svg.solid { fill: currentColor; stroke: none; }
-.icon-btn b {
+.ctl svg { width: var(--ctl-glyph); height: var(--ctl-glyph); }
+.ctl:active { transform: scale(0.9); background: rgba(243, 240, 234, 0.12); }
+
+.ctl.skip { width: var(--skip); height: var(--skip); }
+.ctl.skip svg { width: var(--skip-glyph); height: var(--skip-glyph); }
+.ctl.skip b {
   position: absolute;
-  font-size: 8.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
   top: 53%;
   transform: translateY(-50%);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
+
+.ctl.play {
+  width: var(--play);
+  height: var(--play);
+  background: var(--paper);
+  color: var(--bg);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+}
+.ctl.play svg { width: var(--play-glyph); height: var(--play-glyph); }
+.ctl.play:active { transform: scale(0.93); background: var(--paper); }
+
+svg.solid { fill: currentColor; stroke: none; }
+
+.chrome-top { display: flex; align-items: center; gap: 14px; }
+.now { min-width: 0; flex: 1 1 auto; }
+.now p {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.now .label { font-size: 10px; }
 
 .chrome-mid {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(22px, 9vw, 54px);
+  gap: clamp(26px, 10vw, 68px);
 }
-.play-btn {
-  width: 76px; height: 76px;
-  border-radius: 50%;
-  background: var(--paper);
-  color: var(--bg);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
-  transition: transform 0.4s var(--ease);
-}
-.play-btn:active { transform: scale(0.93); }
-.play-btn svg { width: 28px; height: 28px; fill: currentColor; stroke: none; }
 
-.chrome-bottom { display: grid; gap: 8px; }
+.chrome-bottom { display: grid; gap: 6px; }
 
-.scrub { position: relative; height: 26px; display: flex; align-items: center; }
+/* ----------------------------------------------------------- scrubber */
+
+.scrub { position: relative; height: 24px; display: flex; align-items: center; }
 .scrub .track {
   position: relative;
-  height: 3px;
+  height: 4px;
   width: 100%;
   border-radius: 999px;
-  background: rgba(243, 240, 234, 0.25);
-  transition: height 0.25s var(--ease);
+  background: rgba(243, 240, 234, 0.22);
+  transition: height 0.22s var(--ease);
+}
+.scrub .buf {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0%;
+  border-radius: 999px;
+  background: rgba(243, 240, 234, 0.3);
 }
 .scrub .fill {
   position: absolute;
@@ -564,72 +606,260 @@ svg.solid { fill: currentColor; stroke: none; }
   position: absolute;
   top: 50%;
   left: 0%;
-  width: 13px; height: 13px;
-  margin-left: -6.5px;
+  width: 14px; height: 14px;
+  margin-left: -7px;
   border-radius: 50%;
-  background: var(--paper);
+  background: var(--accent);
   transform: translateY(-50%) scale(1);
-  transition: transform 0.25s var(--ease);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  transition: transform 0.22s var(--ease);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
 }
 .scrub input[type="range"] {
   position: absolute;
-  inset: -10px 0;
+  inset: -12px 0;
   width: 100%;
   opacity: 0;
   -webkit-appearance: none;
   appearance: none;
   margin: 0;
+  touch-action: none;
 }
-.scrub.dragging .track { height: 6px; }
-.scrub.dragging .knob { transform: translateY(-50%) scale(1.45); }
+.scrub.dragging .track { height: 7px; }
+.scrub.dragging .knob { transform: translateY(-50%) scale(1.5); }
 
 .times {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   font-size: 11.5px;
   color: var(--soft);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
-.pills { display: flex; gap: 8px; }
-.pill {
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  font-size: 11.5px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--soft);
-  transition: color 0.3s var(--ease), border-color 0.3s var(--ease),
-              background 0.3s var(--ease);
-}
-.pill:active { transform: scale(0.94); }
-.pill.is-on { color: var(--bg); background: var(--paper); border-color: var(--paper); }
-.pill[hidden] { display: none !important; }
 
-/* landscape: give the picture everything, keep the words */
+/* ------------------------------------------------- bottom action row */
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 4px;
+}
+.action {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: var(--r-md);
+  color: var(--soft);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.action svg { width: 21px; height: 21px; }
+.action span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.action:active { background: rgba(243, 240, 234, 0.1); color: var(--paper); }
+.action.is-on { color: var(--accent); }
+.action[disabled] { opacity: 0.35; }
+
+/* a phone in portrait has no room for five labels */
+@media (max-width: 599px) {
+  .action span { display: none; }
+  .action { flex: 0 1 auto; padding: 10px; }
+  .actions { justify-content: space-around; }
+}
+
+/* --------------------------------------------- brightness and volume */
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 2px 2px;
+  animation: fade 0.25s var(--ease);
+}
+.slider-row .s-icon { display: grid; place-items: center; color: var(--paper); }
+.slider-row .s-icon svg { width: 20px; height: 20px; }
+.slider-row .s-val {
+  font-size: 11.5px;
+  color: var(--soft);
+  font-variant-numeric: tabular-nums;
+  min-width: 4ch;
+  text-align: right;
+}
+.slider-row input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(243, 240, 234, 0.22);
+  outline: none;
+  margin: 0;
+  touch-action: none;
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+.slider-row input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--paper);
+}
+
+/* VLC-style readout while swiping */
+.hud {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 20px;
+  border-radius: 999px;
+  background: rgba(16, 15, 14, 0.74);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border: 1px solid var(--line);
+  pointer-events: none;
+  animation: fade 0.18s var(--ease);
+}
+.hud-icon { display: grid; place-items: center; color: var(--paper); }
+.hud-icon svg { width: 21px; height: 21px; }
+.hud-bar {
+  width: clamp(92px, 26vw, 150px);
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(243, 240, 234, 0.22);
+  overflow: hidden;
+}
+.hud-bar i { display: block; height: 100%; background: var(--paper); border-radius: 999px; }
+.hud-val {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  min-width: 4.5ch;
+  letter-spacing: 0.02em;
+}
+
+/* ------------------------------------------------------------- lock */
+
+.unlock {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: calc(var(--bottom) + 34px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: rgba(16, 15, 14, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  font-size: 12.5px;
+  font-weight: 500;
+  animation: fade 0.25s var(--ease);
+}
+.unlock svg { width: 17px; height: 17px; }
+.player.locked.ui-off .unlock { opacity: 0; pointer-events: none; transition: opacity 0.3s var(--ease); }
+
+/* -------------------------------------------------- landscape / full */
+
 @media (orientation: landscape) {
   /* the three ride the full width of the picture, right at the top edge */
-  .player #today { top: calc(var(--top) + 6px); }
+  .player { --gutter: 26px; --play: 70px; --play-glyph: 29px; --skip: 54px; --skip-glyph: 29px; }
+  .player #today { top: calc(var(--top) + 6px); left: calc(var(--left) + 10px); right: calc(var(--right) + 10px); }
   .player .slots { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .player .slot { padding: 7px 14px; min-height: 40px; }
   .player .slot .he { font-size: 18px; }
   .player .slot .en { font-size: 11.5px; }
-  /* with the strip across the top, the back button tucks under it */
-  .chrome { padding-top: calc(var(--top) + 62px); }
-  .play-btn { width: 64px; height: 64px; }
-  .chrome-top { align-items: center; }
-  .now { padding-top: 0; }
+  .chrome { padding-top: calc(var(--top) + 60px); }
+  .actions { justify-content: center; gap: 10px; }
+  .action { flex: 0 1 150px; }
 }
-@media (orientation: landscape) and (max-height: 420px) {
+@media (orientation: landscape) and (max-height: 430px) {
+  .player { --play: 60px; --play-glyph: 25px; --skip: 48px; --skip-glyph: 26px; --ctl: 40px; --ctl-glyph: 21px; }
   .player .slot { min-height: 34px; padding: 5px 12px; }
   .player .slot .he { font-size: 16px; }
-  .chrome { padding-top: calc(var(--top) + 52px); }
-  .play-btn { width: 56px; height: 56px; }
-  .icon-btn.big { width: 48px; height: 48px; }
+  .chrome { padding-top: calc(var(--top) + 50px); padding-bottom: calc(var(--bottom) + 8px); }
+  .action { padding: 5px 4px; font-size: 10.5px; }
+  .action svg { width: 19px; height: 19px; }
+  .scrub { height: 18px; }
 }
+
+/* ========================== options panel ========================= */
+
+.panel-wrap { position: fixed; inset: 0; z-index: 350; display: flex; align-items: flex-end; }
+.panel-bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  animation: fade 0.3s var(--ease);
+}
+.panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: 10px calc(var(--right) + 20px) calc(var(--bottom) + 18px) calc(var(--left) + 20px);
+  max-height: 86vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: slide 0.42s var(--ease);
+}
+.panel h2 {
+  margin: 6px 0 4px;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+.panel-note {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--soft);
+  max-width: 44ch;
+}
+.panel-list { list-style: none; margin: 10px 0 14px; padding: 0; display: grid; gap: 2px; }
+.panel-list button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 14px;
+  border-radius: var(--r-md);
+  font-size: 15px;
+  text-align: left;
+  color: var(--paper);
+  transition: background 0.25s var(--ease);
+}
+.panel-list button:active { background: var(--card); }
+.panel-list .on { color: var(--accent); }
+.panel-list .on svg { width: 19px; height: 19px; }
+.panel-list .sub { display: block; font-size: 12px; color: var(--faint); margin-top: 2px; }
+.panel-close { width: 100%; padding: 13px; }
 
 /* ============================== sheet ============================= */
 
