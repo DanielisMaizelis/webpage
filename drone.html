@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1101a">
+  <link rel="stylesheet" href="styles.css?v=1101c">
 </head>
 <body>
 
@@ -92,28 +92,31 @@
 
   <section class="case" id="drone">
     <div class="split">
-      <a class="split-media schematic reveal" href="media/drone-schematic.png" target="_blank" rel="noopener" aria-label="Open the drone schematic full size">
+      <a class="split-media schematic reveal" href="media/drone-schematic.png" aria-label="Open the drone schematic full size">
         <img src="media/drone-schematic.png" alt="Schematic of the drone's flight controller" loading="lazy">
         <span class="chip on-media">Previous version</span>
       </a>
       <div class="split-text reveal">
         <span class="label">01 — The drone</span>
         <h3>Small, and all mine.</h3>
-        <p>An STM32 runs it, a gyro and a barometer track its tilt and height, and four MOSFETs drive the motors.</p>
+        <p>A tiny whoop-style FPV drone, about 10 cm across. I designed the flight controller myself in EasyEDA, and it goes in a 3D printed Firebird 720 frame with a bay of about 26 x 26.7 mm for the board.</p>
+        <p>In this version an STM32 runs it, and a BMI270 gyro and a BMP390 barometer track its tilt and height. Each of the four 720 brushed motors gets its own AO3400A MOSFET and flyback diode.</p>
+        <p>It runs off a 1S LiPo through a MOSFET power switch, and I program it over SWD with an ST-LINK.</p>
       </div>
     </div>
   </section>
 
   <section class="case" id="remote">
     <div class="split reverse">
-      <a class="split-media schematic reveal" href="media/remote-schematic.png" target="_blank" rel="noopener" aria-label="Open the remote schematic full size">
+      <a class="split-media schematic reveal" href="media/remote-schematic.png" aria-label="Open the remote schematic full size">
         <img src="media/remote-schematic.png" alt="Schematic of the remote" loading="lazy">
         <span class="chip on-media">Previous version</span>
       </a>
       <div class="split-text dark reveal">
         <span class="label">02 — The remote</span>
         <h3>Two sticks, two screens.</h3>
-        <p>Two thumbsticks, an OLED and a built-in e-ink display. Its radio is about to be updated too.</p>
+        <p>An STM32 reads two thumbsticks and drives two screens: a small SSD1306 OLED and a built-in 2.9 inch e-ink display.</p>
+        <p>This version talks to the drone over an NRF24L01 radio, and that's about to be updated too.</p>
       </div>
     </div>
   </section>
@@ -126,10 +129,14 @@
       I want it to run Betaflight, which no longer supports the STM32F1 I picked. So the drone moves to an <em>STM32F411 and an ExpressLRS radio.</em>
     </p>
     <ol class="steps">
-      <li class="step reveal"><span class="num">01</span><h4>New version</h4><p>Updating the schematics.</p></li>
-      <li class="step reveal"><span class="num">02</span><h4>PCB</h4><p>A board that fits the 3D printed frame.</p></li>
-      <li class="step reveal"><span class="num">03</span><h4>Parts</h4><p>Buying the components now.</p></li>
+      <li class="step reveal"><span class="num">01</span><h4>New version</h4><p>Redrawing the schematic around the STM32F411 and an ELRS receiver.</p></li>
+      <li class="step reveal"><span class="num">02</span><h4>PCB</h4><p>Laying out a board that fits the bay in the 3D printed frame.</p></li>
+      <li class="step reveal"><span class="num">03</span><h4>Parts</h4><p>Buying the components. JLCPCB assembles the STM32F411, since its pads sit under the chip.</p></li>
+      <li class="step reveal"><span class="num">04</span><h4>Betaflight</h4><p>A small config file maps my pins, then I bind the radio and tune it.</p></li>
+      <li class="step reveal"><span class="num">05</span><h4>First flight</h4><p>Then it finally flies.</p></li>
+      <li class="step reveal"><span class="num">06</span><h4>Photos</h4><p>Pictures and results go on this page as they happen.</p></li>
     </ol>
+    <p class="steps-note reveal">So far it's taught me MOSFET switching, flyback diodes, decoupling, when to use SPI, I2C or UART, and to check firmware support before committing to a chip.</p>
   </section>
 
   <section class="contact" id="contact">
@@ -157,6 +164,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="site.js?v=1101a"></script>
+<script src="site.js?v=1101c"></script>
 </body>
 </html>

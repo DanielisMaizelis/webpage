@@ -44,6 +44,33 @@ if (finePointer) {
   });
 }
 
+// ---------- schematics open full screen on the same page, X to close ----------
+const schematicLinks = document.querySelectorAll("a.schematic");
+if (schematicLinks.length) {
+  const box = document.createElement("dialog");
+  box.className = "lightbox";
+  box.innerHTML = '<button class="lightbox-close" type="button" aria-label="Close">' +
+    '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>' +
+    '</button><img alt="">';
+  document.body.appendChild(box);
+  const big = box.querySelector("img");
+
+  schematicLinks.forEach(a => a.addEventListener("click", e => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    big.src = a.href;
+    big.alt = a.querySelector("img").alt;
+    document.documentElement.classList.add("lightbox-open");
+    box.showModal();
+    box.scrollTo(0, 0);
+  }));
+
+  box.querySelector(".lightbox-close").addEventListener("click", () => box.close());
+  // Clicking the dark area around the picture closes it too; Esc is built into <dialog>
+  box.addEventListener("click", e => { if (e.target === box) box.close(); });
+  box.addEventListener("close", () => document.documentElement.classList.remove("lightbox-open"));
+}
+
 // ---------- project pages: prev / next arrows, in menu order ----------
 const SLIDE = 0.6;   // share of the viewport width a page travels when sliding in or out
 const SEQ = ["rl-forest.html", "danieltube.html", "class-ab-amp.html", "gta-radio.html", "drone.html", "water-tracker.html", "other-projects.html"];

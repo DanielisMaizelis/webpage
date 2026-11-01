@@ -521,9 +521,46 @@ em { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
   .project:hover .project-media video { transform: scale(1.08); filter: saturate(1.1); }
   .project:hover .project-media img { transform: scale(1.08); }
 }
-/* odd one out in a two-up row: takes the whole row, so the screenshot shows whole */
-.project-full { grid-column: 1 / -1; }
-.project-full .project-media { aspect-ratio: 1359 / 727; }
+/* full-screen picture viewer */
+.lightbox-open { overflow: hidden; }
+.lightbox {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  max-width: none; max-height: none;
+  margin: 0; padding: 16px;
+  border: 0;
+  background: rgba(14, 13, 12, 0.92);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.lightbox[open] { display: flex; animation: lightbox-in 0.25s ease-out; }
+.lightbox img {
+  display: block;
+  flex: none;
+  margin: auto;
+  width: min(100%, 1359px);
+  min-width: 900px; /* on phones: keep it readable and let it be dragged sideways */
+  height: auto;
+  border-radius: 16px;
+  background: #fff;
+}
+@media (min-width: 932px) { .lightbox img { min-width: 0; } }
+.lightbox-close {
+  position: fixed; top: 16px; right: 16px; z-index: 1;
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  padding: 0;
+  border: 0; border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.3s var(--ease);
+}
+@media (hover: hover) { .lightbox-close:hover { transform: scale(1.08) rotate(90deg); } }
+.lightbox-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@keyframes lightbox-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .lightbox[open] { animation: none; } }
+
 /* schematic screenshots: white paper, shown whole, tap to open full size */
 .project-media.schematic, .split-media.schematic { background: #fff; }
 .split-media.schematic { display: block; }
@@ -1064,7 +1101,7 @@ kbd {
   .card-photo { min-height: 420px; }
   .skill-groups { grid-template-columns: 1fr; }
   .projects { grid-template-columns: 1fr; }
-  .project, .project-xl, .project-full { grid-column: auto; }
+  .project, .project-xl { grid-column: auto; }
   .project-media.tall { aspect-ratio: 4 / 4; }
   .marquee { padding: 12px 0; }
   .split-media { min-height: 360px; }
