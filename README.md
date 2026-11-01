@@ -35,6 +35,7 @@ A portfolio of the projects I've built — drones, terminal apps, embedded syste
 | `danieltube.html` | Terminal YouTube client with word-by-word translated subtitles |
 | `class-ab-amp.html` | Class AB amplifier — PCB on the bench, video with a sound toggle |
 | `gta-radio.html` | GTA PCB Radio — FM radio on a custom STM32 board (ongoing) |
+| `drone.html` | DIY Drone — tiny drone and remote on custom PCBs (ongoing) |
 | `water-tracker.html` | Water Tracker — PCB + firmware (ongoing, placeholder) |
 | `other-projects.html` | Quad CAN tester, Subaru dashboard, Axis parking app, Robocar |
 | `main.html` | Redirect to `index.html` for old links |
@@ -60,7 +61,8 @@ PersonalWebsite/
 ├── danieltube.html         # Project 02
 ├── class-ab-amp.html       # Project 03
 ├── gta-radio.html          # Project 04
-├── water-tracker.html      # Project 05
+├── drone.html              # Project 05
+├── water-tracker.html      # Project 06
 ├── other-projects.html     # Smaller builds
 ├── main.html               # → index.html
 ├── styles.css              # Design system

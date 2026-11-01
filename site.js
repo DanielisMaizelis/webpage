@@ -46,7 +46,7 @@ if (finePointer) {
 
 // ---------- project pages: prev / next arrows, in menu order ----------
 const SLIDE = 0.6;   // share of the viewport width a page travels when sliding in or out
-const SEQ = ["rl-forest.html", "danieltube.html", "class-ab-amp.html", "gta-radio.html", "water-tracker.html", "other-projects.html"];
+const SEQ = ["rl-forest.html", "danieltube.html", "class-ab-amp.html", "gta-radio.html", "drone.html", "water-tracker.html", "other-projects.html"];
 const pageOf = href => new URL(href, location.href).pathname.split("/").pop() || "index.html";
 const hereIdx = SEQ.indexOf(pageOf(location.href));
 const pill = document.querySelector(".nav-pill");
@@ -393,7 +393,9 @@ function initCursor() {
 
 // ---------- featured project cards expand into the next page ----------
 function initTransitions() {
+  // Cards with a picture instead of a video have nothing to lift out, so they just link
   document.querySelectorAll(".project-xl").forEach(link => {
+    if (!link.querySelector("video")) return;
     link.addEventListener("click", e => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
       e.preventDefault();
